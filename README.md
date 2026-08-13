@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Acre
+
+Invoicing and payment acknowledgment letters for real estate agents.
+
+Acre is a local-first web app for drafting, previewing, and exporting the
+formal acknowledgment letters and invoices agents send to property buyers.
+Everything is stored in your browser — no account, no server.
+
+## Features
+
+- **Acknowledgment letters & invoices** — build a letter from reusable
+  fields: type, reference, date, client, salutation, body, breakdown of
+  line items, closing, and signature block.
+- **Placeholders in the body** — use `{amount}`, `{words}`, `{total}` and
+  `{totalWords}` so figures are written out (in naira words) automatically
+  and stay in sync with your line items.
+- **Live A4 preview** — the document renders exactly as it prints, updating
+  as you type.
+- **Templates** — Estate, Minimal, Navy, and Terracotta, each with a custom
+  header band, footer wave, and background pattern.
+- **Fonts** — Carlito and Fraunces.
+- **Custom background pattern** — upload your own pattern image or use the
+  built-in flower pattern.
+- **Clients** — manage a contact list, with phone and email shown on the
+  letter.
+- **Company details & branding** — logo, signature (upload or draw), contact
+  details, socials, and document defaults.
+- **Export** — download a print-ready one-page PDF, or print directly to A4.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see
+the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The app seeds a sample company, client, and letter on first run so you can
+explore before entering your own data.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+```bash
+npm run dev        # start the development server
+npm run build      # production build
+npm run lint       # lint
+npm run verify     # end-to-end checks (Playwright, needs dev server)
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Tech
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Next.js (App Router), React, TypeScript, Tailwind CSS, and
+@react-pdf/renderer for PDF export.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built by [worksbybrad.xyz](https://worksbybrad.xyz).
