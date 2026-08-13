@@ -153,3 +153,22 @@ export function footerWaves(width: number, height: number): { main: string; acce
     accent: wave(height * 0.84, height * 0.06),
   }
 }
+
+export function headerWaves(width: number, height: number): { main: string; accent: string } {
+  const humps = 3
+  const step = width / (humps * 2)
+  const wave = (base: number, amp: number) => {
+    let d = `M0 0 L ${width} 0 L ${width} ${base}`
+    for (let i = 0; i < humps * 2; i++) {
+      const x0 = width - i * step
+      const dir = i % 2 === 0 ? -1 : 1
+      d += ` Q ${x0 - step / 2} ${base + amp * dir}, ${x0 - step} ${base}`
+    }
+    d += ` L 0 0 Z`
+    return d
+  }
+  return {
+    main: wave(height * 0.72, height * 0.16),
+    accent: wave(height * 0.45, height * 0.12),
+  }
+}

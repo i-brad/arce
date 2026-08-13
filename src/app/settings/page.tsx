@@ -97,6 +97,47 @@ function SettingsForm({
           </div>
         </Field>
 
+        <Field
+          label="Background pattern"
+          hint="PNG, JPEG or WebP. Replaces the built-in pattern behind every document and PDF. Toggle it per document in the editor."
+        >
+          <div className="flex items-center gap-4">
+            {form.patternImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={form.patternImage}
+                alt="Background pattern preview"
+                className="size-14 rounded-[6px] border border-line bg-white object-cover p-0.5"
+              />
+            ) : (
+              <div className="flex size-14 items-center justify-center rounded-[6px] border border-dashed border-line-strong text-[11px] text-faint">
+                None
+              </div>
+            )}
+            <label className="inline-flex h-10 cursor-pointer items-center rounded-[6px] border border-line-strong px-4 text-sm font-medium text-ink transition-colors hover:bg-ink/[0.04]">
+              {form.patternImage ? "Replace pattern" : "Upload pattern"}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  const reader = new FileReader()
+                  reader.onload = () => set({ patternImage: String(reader.result ?? "") })
+                  reader.readAsDataURL(file)
+                  e.target.value = ""
+                }}
+              />
+            </label>
+            {form.patternImage ? (
+              <Button variant="ghost" size="md" type="button" onClick={() => set({ patternImage: "" })}>
+                Remove
+              </Button>
+            ) : null}
+          </div>
+        </Field>
+
         <Field label="Address">
           <Input
             value={form.address}
@@ -104,7 +145,7 @@ function SettingsForm({
             placeholder="Estate, City, State"
           />
         </Field>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Phone">
             <Input
               value={form.phone}
@@ -136,7 +177,7 @@ function SettingsForm({
           <p className="mb-4 mt-1 text-xs text-muted">
             Contact details and socials are rendered in the footer of every document and PDF.
           </p>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Website">
               <Input
                 value={form.website}
@@ -204,7 +245,7 @@ function SettingsForm({
             ))}
           </Select>
         </Field>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Default signatory role">
             <Input
               value={form.signatoryRole}

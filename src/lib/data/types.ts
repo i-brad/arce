@@ -66,6 +66,7 @@ export interface InvoiceDocument {
   signatoryRole: string;
   template: TemplateId;
   font: DocFont;
+  showPattern: boolean;
   status: DocStatus;
   createdAt: string;
   updatedAt: string;

@@ -47,6 +47,7 @@ interface LinkButtonProps {
   variant?: Variant
   size?: Size
   className?: string
+  onClick?: () => void
   children: ReactNode
 }
 
@@ -55,11 +56,13 @@ export function LinkButton({
   variant = "primary",
   size = "md",
   className,
+  onClick,
   children,
 }: LinkButtonProps) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       className={cn(
         "inline-flex items-center justify-center rounded-[6px] font-medium transition-colors select-none",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",

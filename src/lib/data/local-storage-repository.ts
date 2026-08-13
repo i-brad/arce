@@ -5,7 +5,7 @@ import { seedClients, seedCompany, seedDocuments } from "./seed"
 const KEY_COMPANY = "ire:company"
 const KEY_CLIENTS = "ire:clients"
 const KEY_DOCUMENTS = "ire:documents"
-const KEY_SEEDED = "ire:seeded_v3"
+const KEY_SEEDED = "ire:seeded_v4"
 
 const delay = (ms = 40) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 

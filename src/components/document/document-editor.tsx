@@ -290,15 +290,26 @@ export function DocumentEditor({ doc, clients, onChange }: DocumentEditorProps) 
           </div>
         ))}
 
-        <label className="flex items-center gap-2 text-sm text-muted">
-          <input
-            type="checkbox"
-            checked={doc.showTotal}
-            onChange={(e) => set({ showTotal: e.target.checked })}
-            className="size-4 accent-accent"
-          />
-          Show computed total at the end of the breakdown
-        </label>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={doc.showTotal}
+              onChange={(e) => set({ showTotal: e.target.checked })}
+              className="size-4 accent-accent"
+            />
+            Show computed total at the end of the breakdown
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={doc.showPattern}
+              onChange={(e) => set({ showPattern: e.target.checked })}
+              className="size-4 accent-accent"
+            />
+            Show background pattern
+          </label>
+        </div>
       </section>
 
       <section className="space-y-5">

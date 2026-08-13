@@ -6,7 +6,7 @@ import {
   renderTemplate,
   totalOf,
 } from "@/lib/documents/document-utils"
-import { footerWaves, getTemplate } from "@/lib/documents/theme"
+import { footerWaves, getTemplate, headerWaves } from "@/lib/documents/theme"
 import { FLOWER_CENTER_R, FLOWER_PETAL_R, FLOWER_SPACING, flowerPath } from "@/lib/documents/patterns"
 import { formatNaira } from "@/lib/utils/currency"
 
@@ -25,6 +25,7 @@ export function DocumentPage({
   const thanks = renderTemplate(doc.thanks, doc)
   const total = totalOf(doc)
   const waves = footerWaves(794, 96)
+  const topWaves = headerWaves(794, 40)
   const contactLine = companyContactLine(company)
   const socialsLine = companySocialsLine(company)
   const hasFooter = Boolean(contactLine || socialsLine)
@@ -39,35 +40,37 @@ export function DocumentPage({
       }`}
     >
       {/* Background pattern: uploaded image, else template flower pattern */}
-      {company.patternImage ? (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img
-          src={company.patternImage}
-          alt=""
-          aria-hidden
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40"
-        />
-      ) : tpl.pattern ? (
-        <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full">
-          <defs>
-            <pattern
-              id={`pattern-${tpl.id}`}
-              width={tile}
-              height={tile}
-              patternUnits="userSpaceOnUse"
-            >
-              <path d={flower.path} fill={tpl.primary} opacity="0.09" />
-              <circle
-                cx={flower.centerX}
-                cy={flower.centerY}
-                r={flower.centerR}
-                fill={tpl.primary}
-                opacity="0.09"
-              />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill={`url(#pattern-${tpl.id})`} />
-        </svg>
+      {doc.showPattern ? (
+        company.patternImage ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={company.patternImage}
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover opacity-40"
+          />
+        ) : tpl.pattern ? (
+          <svg aria-hidden className="pointer-events-none absolute inset-0 z-[1] h-full w-full">
+            <defs>
+              <pattern
+                id={`pattern-${tpl.id}`}
+                width={tile}
+                height={tile}
+                patternUnits="userSpaceOnUse"
+              >
+                <path d={flower.path} fill={tpl.primary} opacity="0.09" />
+                <circle
+                  cx={flower.centerX}
+                  cy={flower.centerY}
+                  r={flower.centerR}
+                  fill={tpl.primary}
+                  opacity="0.09"
+                />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill={`url(#pattern-${tpl.id})`} />
+          </svg>
+        ) : null
       ) : null}
 
       {tpl.band ? (
@@ -123,6 +126,17 @@ export function DocumentPage({
             </div>
           </div>
           <div className="h-[4px] w-full" style={{ backgroundColor: tpl.accentStrip }} />
+          {tpl.wave ? (
+            <svg
+              aria-hidden
+              className="document-header-wave pointer-events-none absolute inset-x-0 top-full h-[40px] w-full"
+              viewBox="0 0 794 40"
+              preserveAspectRatio="none"
+            >
+              <path d={topWaves.main} fill={tpl.bandBg} />
+              <path d={topWaves.accent} fill={tpl.accentStrip} />
+            </svg>
+          ) : null}
         </div>
       ) : (
         <div className="flex items-start justify-between gap-8 px-[22mm] pt-[14mm]">
@@ -187,7 +201,7 @@ export function DocumentPage({
           </>
         ) : null}
 
-        <div className="relative">
+        <div className="relative z-10">
           {client ? (
             <>
               <p className="text-[12px] font-bold leading-relaxed" style={{ color: tpl.ink }}>

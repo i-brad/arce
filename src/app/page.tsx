@@ -25,7 +25,7 @@ export default function DashboardPage() {
         actions={<LinkButton href="/documents/new">New document</LinkButton>}
       />
 
-      <div className="mb-8 grid grid-cols-3 gap-4">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Stat label="Documents" value={documents.length} href="/documents" />
         <Stat label="Drafts" value={drafts} href="/documents" />
         <Stat label="Clients" value={clients.length} href="/clients" />

@@ -22,6 +22,10 @@ async function check(url, expectedTexts, label) {
   console.log(`[${label}] ${missing.length ? "MISSING: " + missing.join(" | ") : "OK"}`)
 }
 
+const hasPatternLayer = async () =>
+  (await page.locator(".document-page pattern").count()) > 0 ||
+  (await page.locator('.document-page img[aria-hidden="true"]').count()) > 0
+
 await check("/", [
   "Recent documents",
   "LETTER OF ACKNOWLEDGEMENT",
@@ -55,6 +59,7 @@ await check("/documents/doc_alofe_ack", [
   "N 150,000",
   "N 900,000",
   "N 1,850,000",
+  "N 7,400,000",
   "DIRECTOR OF OPERATIONS",
   "For: Silver Pacific Homes",
   "Download PDF",
@@ -98,13 +103,12 @@ if (dateWraps) {
   console.log("[editor] date on one line: OK")
 }
 
-// Flower pattern must be present in the web preview
-const patternCount = await page.locator(".document-page pattern").count()
-if (patternCount === 0) {
+// Background pattern must be OFF by default on the seeded document
+if (await hasPatternLayer()) {
   failures++
-  console.log("[pattern] flower pattern: MISSING")
+  console.log("[pattern] seed should have patterns off by default")
 } else {
-  console.log("[pattern] flower pattern: OK")
+  console.log("[pattern] off by default on seed: OK")
 }
 
 // Template switching: estate has a footer wave, minimal has none, navy brings it back
@@ -114,6 +118,13 @@ if ((await previewSvg.count()) === 0) {
   console.log("[template] estate: MISSING footer wave svg")
 } else {
   console.log("[template] estate footer wave: OK")
+}
+const headerWave = page.locator(".document-page svg.document-header-wave")
+if ((await headerWave.count()) === 0) {
+  failures++
+  console.log("[template] estate: MISSING header wave svg")
+} else {
+  console.log("[template] estate header wave: OK")
 }
 const bandZ = await page
   .locator(".document-page .z-10")
@@ -127,27 +138,27 @@ if (bandZ !== "10") {
 }
 await page.getByLabel("Template").selectOption("minimal")
 await page.waitForTimeout(400)
-if ((await previewSvg.count()) !== 0) {
+if ((await previewSvg.count()) !== 0 || (await headerWave.count()) !== 0) {
   failures++
-  console.log("[template] minimal: unexpected svg present")
+  console.log("[template] minimal: unexpected wave svg present")
 } else {
   console.log("[template] minimal (no wave): OK")
 }
 await page.getByLabel("Template").selectOption("navy")
 await page.waitForTimeout(400)
-if ((await previewSvg.count()) === 0) {
+if ((await previewSvg.count()) === 0 || (await headerWave.count()) === 0) {
   failures++
-  console.log("[template] navy: MISSING footer wave svg")
+  console.log("[template] navy: MISSING wave svg")
 } else {
-  console.log("[template] navy footer wave: OK")
+  console.log("[template] navy footer+header wave: OK")
 }
 await page.getByLabel("Template").selectOption("terracotta")
 await page.waitForTimeout(400)
-if ((await previewSvg.count()) === 0) {
+if ((await previewSvg.count()) === 0 || (await headerWave.count()) === 0) {
   failures++
-  console.log("[template] terracotta: MISSING footer wave svg")
+  console.log("[template] terracotta: MISSING wave svg")
 } else {
-  console.log("[template] terracotta footer wave: OK")
+  console.log("[template] terracotta footer+header wave: OK")
 }
 const bandBg = await page
   .locator(".document-page .z-10")
@@ -191,6 +202,18 @@ if (savedCompany !== "Casa Khanya") failures++
 if (!settingsBody.includes("Replace logo")) failures++
 console.log("[settings save] " + (settingsBody.includes("Replace logo") ? "OK" : "FAIL (logo not saved)"))
 
+// Background pattern upload: upload, save, verify it replaces the flower pattern on the document
+await page.locator('input[type="file"]').nth(1).setInputFiles({
+  name: "pattern.png",
+  mimeType: "image/png",
+  buffer: png,
+})
+await page.getByText("Save settings").click()
+await page.waitForTimeout(600)
+const patternSettingsBody = await page.locator("body").innerText()
+if (!patternSettingsBody.includes("Replace pattern")) failures++
+console.log("[settings] " + (patternSettingsBody.includes("Replace pattern") ? "pattern upload: OK" : "FAIL (pattern not saved)"))
+
 await page.goto(`${BASE}/documents/doc_alofe_ack`, { waitUntil: "networkidle" })
 const docBody = await page.locator("body").innerText()
 const expectedDoc = [
@@ -222,6 +245,19 @@ const [download] = await Promise.all([
 const dlPath = await download.path()
 console.log(`[pdf download] ${dlPath ? "OK (" + download.suggestedFilename() + ")" : "FAILED"}`)
 if (!dlPath) failures++
+const pdfBuf = await import("node:fs/promises").then((fs) => fs.readFile(dlPath))
+const pdfText = pdfBuf.toString("latin1")
+const countMatch = pdfText.match(/\/Count\s+(\d+)/)
+const pageCount = countMatch ? parseInt(countMatch[1], 10) : null
+if (pageCount === null) {
+  failures++
+  console.log("[pdf] page count unknown")
+} else if (pageCount > 1) {
+  failures++
+  console.log(`[pdf] should be 1 page, got ${pageCount}`)
+} else {
+  console.log("[pdf] single page: OK")
+}
 
 // Print: only the print-only document must be visible; app chrome hidden
 await page.emulateMedia({ media: "print" })
@@ -251,6 +287,70 @@ if (!printOk) {
     `[print] clean A4 document (chrome hidden): OK (${printState.printCopyWidth})`,
   )
 }
+
+// New document: total breakdown enabled by default, pattern toggle works
+await page.goto(`${BASE}/documents/new`, { waitUntil: "networkidle" })
+await page.getByLabel("Client").selectOption("client_alofe")
+await page.getByLabel("Reference number").fill("VERIFY-001")
+await page.getByText("Create & edit").click()
+await page.waitForURL(/\/documents\//)
+await page.waitForTimeout(600)
+const newDocBody = await page.locator("body").innerText()
+if (!newDocBody.includes("TOTAL")) {
+  failures++
+  console.log("[defaults] new document: TOTAL missing (showTotal should default on)")
+} else {
+  console.log("[defaults] new document total enabled by default: OK")
+}
+await page.getByLabel("Show background pattern").check()
+await page.waitForTimeout(300)
+if (!(await hasPatternLayer())) {
+  failures++
+  console.log("[defaults] pattern should appear when toggled on")
+} else {
+  console.log("[defaults] pattern toggle on: OK")
+}
+await page.getByLabel("Show background pattern").uncheck()
+await page.waitForTimeout(300)
+if (await hasPatternLayer()) {
+  failures++
+  console.log("[defaults] pattern should disappear when toggled off")
+} else {
+  console.log("[defaults] pattern toggle off: OK")
+}
+
+// Mobile responsiveness: hamburger opens the drawer, nav works, sidebar hidden
+await page.setViewportSize({ width: 375, height: 720 })
+await page.goto(`${BASE}/`, { waitUntil: "networkidle" })
+const desktopSidebarHidden = await page
+  .locator("aside")
+  .first()
+  .evaluate((el) => getComputedStyle(el).display)
+if (desktopSidebarHidden === "none") {
+  console.log("[mobile] desktop sidebar hidden on mobile: OK")
+} else {
+  failures++
+  console.log(`[mobile] desktop sidebar should be hidden, got ${desktopSidebarHidden}`)
+}
+await page.getByLabel("Open menu").click()
+const drawerVisible = await page
+  .locator(".mobile-drawer")
+  .evaluate((el) => getComputedStyle(el).transform)
+if (drawerVisible === "none" || drawerVisible.includes("matrix(1")) {
+  console.log("[mobile] drawer opens: OK")
+} else {
+  failures++
+  console.log(`[mobile] drawer transform: ${drawerVisible}`)
+}
+await page.getByRole("link", { name: "Documents", exact: true }).click()
+await page.waitForURL(/\/documents$/)
+if (page.url().endsWith("/documents")) {
+  console.log("[mobile] drawer navigation: OK")
+} else {
+  failures++
+  console.log(`[mobile] navigation failed: ${page.url()}`)
+}
+await page.setViewportSize({ width: 1280, height: 800 })
 
 // Screenshots
 await page.screenshot({ path: `${SHOTS}/editor.png`, fullPage: true })

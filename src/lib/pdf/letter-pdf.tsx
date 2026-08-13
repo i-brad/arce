@@ -8,7 +8,7 @@ import {
   renderTemplate,
   totalOf,
 } from "@/lib/documents/document-utils"
-import { footerWaves, getTemplate, type DocTemplate } from "@/lib/documents/theme"
+import { footerWaves, getTemplate, headerWaves, type DocTemplate } from "@/lib/documents/theme"
 import { FLOWER_SPACING, flowerPath, type FlowerShape } from "@/lib/documents/patterns"
 import { formatNaira } from "@/lib/utils/currency"
 
@@ -41,14 +41,15 @@ function buildStyles(tpl: DocTemplate, font?: string) {
   return StyleSheet.create({
     page: { fontFamily, color: tpl.ink, fontSize: 10 },
     pageInner: { flex: 1, position: "relative" },
+    bandWrap: { position: "relative" },
     headerBand: {
       backgroundColor: tpl.bandBg,
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "flex-start",
       paddingHorizontal: 62,
-      paddingTop: 28,
-      paddingBottom: 26,
+      paddingTop: 22,
+      paddingBottom: 20,
     },
     brandRow: { flexDirection: "row", alignItems: "flex-start" },
     logoChip: {
@@ -69,6 +70,14 @@ function buildStyles(tpl: DocTemplate, font?: string) {
     date: { fontSize: 10, fontWeight: 700, letterSpacing: 0.8, color: tpl.bandText, whiteSpace: "nowrap" },
     ref: { fontSize: 8, color: tpl.bandMuted, marginTop: 2, whiteSpace: "nowrap" },
     accentStrip: { height: 4, backgroundColor: tpl.accentStrip },
+    headerWaveSvg: {
+      position: "absolute",
+      top: "100%",
+      left: 0,
+      right: 0,
+      width: PAGE_W,
+      height: 34,
+    },
     plainHeader: {
       flexDirection: "row",
       justifyContent: "space-between",
@@ -91,8 +100,8 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       flex: 1,
       position: "relative",
       paddingHorizontal: 62,
-      paddingTop: 40,
-      paddingBottom: 34,
+      paddingTop: 34,
+      paddingBottom: 26,
     },
     shapeTop: {
       position: "absolute",
@@ -112,12 +121,12 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       borderRadius: 70,
       backgroundColor: tpl.shapeAlt,
     },
-    content: { position: "relative" },
+    content: { position: "relative", zIndex: 2 },
     clientName: { fontSize: 10, fontWeight: 700, lineHeight: 1.5, color: tpl.ink },
     clientAddress: { fontSize: 9, color: tpl.muted, marginTop: 2, lineHeight: 1.5 },
     clientMeta: { fontSize: 9, color: tpl.muted, marginTop: 2, lineHeight: 1.5 },
-    salutation: { fontSize: 10, marginTop: 14, lineHeight: 1.5, color: tpl.ink },
-    titleWrap: { marginTop: 20, alignItems: "center" },
+    salutation: { fontSize: 10, marginTop: 10, lineHeight: 1.5, color: tpl.ink },
+    titleWrap: { marginTop: 16, alignItems: "center" },
     title: {
       fontSize: 14,
       fontWeight: 700,
@@ -125,15 +134,15 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       color: tpl.titleAccent ? tpl.primary : tpl.ink,
     },
     titleRule: { width: 64, height: 3, backgroundColor: tpl.primary, marginTop: 8 },
-    bodyText: { fontSize: 10, marginTop: 18, lineHeight: 1.65, textAlign: "justify", color: tpl.ink },
-    breakdownHeading: { fontSize: 10, marginTop: 18, lineHeight: 1.5, color: tpl.ink },
-    itemsWrap: { marginTop: 10 },
+    bodyText: { fontSize: 10, marginTop: 14, lineHeight: 1.65, textAlign: "justify", color: tpl.ink },
+    breakdownHeading: { fontSize: 10, marginTop: 14, lineHeight: 1.5, color: tpl.ink },
+    itemsWrap: { marginTop: 8 },
     sectionLabel: {
       fontSize: 10,
       fontWeight: 700,
       letterSpacing: 0.6,
       marginTop: 14,
-      marginBottom: 2,
+      marginBottom: 0,
       paddingLeft: 10,
       lineHeight: 1.5,
       color: tpl.titleAccent ? tpl.primary : tpl.ink,
@@ -146,7 +155,7 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       alignItems: "flex-start",
       borderBottomWidth: 0.4,
       borderBottomColor: tpl.line,
-      paddingVertical: 4,
+      paddingVertical: 3.5,
     },
     itemDesc: { flex: 1, fontSize: 10, lineHeight: 1.5, paddingRight: 18, color: tpl.ink },
     itemAmount: {
@@ -164,7 +173,7 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       borderRadius: 6,
       marginTop: 12,
       paddingHorizontal: 12,
-      paddingVertical: 10,
+      paddingVertical: 8,
     },
     totalRowPlain: {
       flexDirection: "row",
@@ -189,10 +198,10 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       color: tpl.totalChip ? tpl.primarySoftText : tpl.ink,
     },
     spacer: { flex: 1 },
-    closingWrap: { marginTop: 26 },
+    closingWrap: { marginTop: 18 },
     closing: { fontSize: 10, lineHeight: 1.65, textAlign: "justify", color: tpl.ink },
-    thanks: { fontSize: 10, marginTop: 10, lineHeight: 1.65, textAlign: "justify", color: tpl.ink },
-    signature: { marginTop: 26 },
+    thanks: { fontSize: 10, marginTop: 8, lineHeight: 1.65, textAlign: "justify", color: tpl.ink },
+    signature: { marginTop: 18 },
     signImage: { width: 190, height: 48, objectFit: "contain", marginBottom: 3 },
     signLine: { width: 200, borderTopWidth: 2, borderTopColor: tpl.primary },
     signRole: {
@@ -206,7 +215,7 @@ function buildStyles(tpl: DocTemplate, font?: string) {
     footerBand: {
       backgroundColor: tpl.bandBg,
       paddingHorizontal: 62,
-      paddingTop: 18,
+      paddingTop: 14,
       paddingBottom: tpl.wave ? 70 : 38,
       alignItems: "center",
     },
@@ -269,6 +278,7 @@ export function LetterPdf({
   const thanks = renderTemplate(doc.thanks, doc)
   const total = totalOf(doc)
   const waves = footerWaves(PAGE_W, 100)
+  const topWaves = headerWaves(PAGE_W, 34)
   const contactLine = companyContactLine(company)
   const socialsLine = companySocialsLine(company)
   const hasFooter = Boolean(contactLine || socialsLine)
@@ -277,24 +287,36 @@ export function LetterPdf({
     <Document title={`${doc.title} — ${client?.name ?? doc.number}`} author={company.name}>
       <Page size="A4" style={s.page}>
         <View style={s.pageInner}>
-          {company.patternImage ? (
-            // eslint-disable-next-line jsx-a11y/alt-text
-            <Image
-              src={company.patternImage}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: PAGE_W,
-                height: PAGE_H,
-                objectFit: "cover",
-                opacity: 0.4,
-              }}
-            />
-          ) : tpl.pattern ? (
-            <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
-              <FlowerPattern color={tpl.primary} />
-            </View>
+          {doc.showPattern ? (
+            company.patternImage ? (
+              // eslint-disable-next-line jsx-a11y/alt-text
+              <Image
+                src={company.patternImage}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: PAGE_W,
+                  height: PAGE_H,
+                  objectFit: "cover",
+                  opacity: 0.4,
+                  zIndex: 1,
+                }}
+              />
+            ) : tpl.pattern ? (
+              <View
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 1,
+                }}
+              >
+                <FlowerPattern color={tpl.primary} />
+              </View>
+            ) : null
           ) : null}
 
           {tpl.shapes ? (
@@ -305,7 +327,7 @@ export function LetterPdf({
           ) : null}
 
           {tpl.band ? (
-            <>
+            <View style={s.bandWrap}>
               <View style={s.headerBand}>
                 <View style={s.brandRow}>
                   {company.logo ? (
@@ -328,7 +350,13 @@ export function LetterPdf({
                 </View>
               </View>
               <View style={s.accentStrip} />
-            </>
+              {tpl.wave ? (
+                <Svg style={s.headerWaveSvg} viewBox={`0 0 ${PAGE_W} 34`} preserveAspectRatio="none">
+                  <Path d={topWaves.main} fill={tpl.bandBg} />
+                  <Path d={topWaves.accent} fill={tpl.accentStrip} />
+                </Svg>
+              ) : null}
+            </View>
           ) : (
             <>
               <View style={s.plainHeader}>
