@@ -16,9 +16,8 @@ const navItems = [
 function Brand({ onClick }: { onClick?: () => void }) {
   return (
     <Link href="/" onClick={onClick} className="flex h-16 items-center gap-2.5 px-5">
-      <span className="flex size-7 items-center justify-center rounded-[7px] bg-accent text-[13px] font-semibold text-white">
-        A
-      </span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand-mark.png" alt="" aria-hidden className="size-7 rounded-[7px]" />
       <span className="leading-tight">
         <span className="block text-[15px] font-semibold tracking-tight text-ink">
           Acre
@@ -119,9 +118,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </svg>
         </button>
         <Link href="/" className="flex items-center gap-2">
-          <span className="flex size-7 items-center justify-center rounded-[7px] bg-accent text-[13px] font-semibold text-white">
-            A
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand-mark.png" alt="" aria-hidden className="size-7 rounded-[7px]" />
           <span className="text-[15px] font-semibold tracking-tight text-ink">Acre</span>
         </Link>
         <LinkButton href="/documents/new" size="sm">
