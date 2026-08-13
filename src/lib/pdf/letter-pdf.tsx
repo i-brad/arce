@@ -1,13 +1,27 @@
 import { useMemo } from "react"
-import { Circle, Document, Font, Image, Page, Path, StyleSheet, Svg, Text, View } from "@react-pdf/renderer"
+import {
+  Circle,
+  Document,
+  Ellipse,
+  Font,
+  Image,
+  Line,
+  Page,
+  Path,
+  StyleSheet,
+  Svg,
+  Text,
+  View,
+} from "@react-pdf/renderer"
 import type { Client, Company, InvoiceDocument } from "@/lib/data/types"
 import {
   companyContactLine,
-  companySocialsLine,
+  companySocials,
   formatLetterDate,
   renderTemplate,
   totalOf,
 } from "@/lib/documents/document-utils"
+import { SOCIAL_ICONS, SOCIAL_STROKE_WIDTH, type SocialKey } from "@/lib/documents/social-icons"
 import { footerWaves, getTemplate, headerWaves, type DocTemplate } from "@/lib/documents/theme"
 import { FLOWER_SPACING, flowerPath, type FlowerShape } from "@/lib/documents/patterns"
 import { formatNaira } from "@/lib/utils/currency"
@@ -96,6 +110,55 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       marginHorizontal: 62,
       marginTop: 16,
     },
+    classicHeader: {
+      alignItems: "center",
+      paddingHorizontal: 74,
+      paddingTop: 44,
+    },
+    classicLogo: { width: 48, height: 48, marginBottom: 10, objectFit: "contain" },
+    classicName: { fontSize: 17, fontWeight: 700, letterSpacing: 0.5, color: tpl.ink, textAlign: "center" },
+    classicMeta: { fontSize: 8.5, color: tpl.muted, marginTop: 3, lineHeight: 1.5, textAlign: "center" },
+    classicRule: {
+      borderBottomWidth: 0.6,
+      borderBottomColor: tpl.line,
+      marginTop: 14,
+      alignSelf: "stretch",
+    },
+    classicMetaRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 12, alignSelf: "stretch" },
+    classicDate: { fontSize: 9, letterSpacing: 0.8, color: tpl.muted },
+    classicRef: { fontSize: 9, letterSpacing: 0.8, color: tpl.muted },
+    bannerHeader: {
+      backgroundColor: tpl.bandBg,
+      alignItems: "center",
+      paddingHorizontal: 62,
+      paddingTop: 40,
+      paddingBottom: 22,
+    },
+    bannerLogoChip: {
+      width: 56,
+      height: 56,
+      borderRadius: 16,
+      backgroundColor: tpl.white,
+      padding: 7,
+      marginBottom: 12,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    bannerLogo: { maxWidth: 42, maxHeight: 42, objectFit: "contain" },
+    bannerName: { fontSize: 20, fontWeight: 700, letterSpacing: 0.6, color: tpl.bandText, textAlign: "center" },
+    bannerMeta: { fontSize: 9, color: tpl.bandMuted, marginTop: 4, lineHeight: 1.5, textAlign: "center" },
+    bannerMetaRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: 16,
+      borderTopWidth: 0.6,
+      borderTopColor: tpl.bandMuted,
+      paddingTop: 8,
+      alignSelf: "stretch",
+    },
+    bannerDate: { fontSize: 9, letterSpacing: 0.8, color: tpl.bandMuted },
+    bannerRef: { fontSize: 9, letterSpacing: 0.8, color: tpl.bandMuted },
     body: {
       flex: 1,
       position: "relative",
@@ -219,8 +282,8 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       paddingBottom: tpl.wave ? 70 : 38,
       alignItems: "center",
     },
-    footerContact: { fontSize: 8, color: tpl.bandMuted, lineHeight: 1.5, textAlign: "center" },
-    footerSocials: { fontSize: 8, color: tpl.bandMuted, marginTop: 4, lineHeight: 1.5, textAlign: "center" },
+    footerContact: { fontSize: 10, color: tpl.bandMuted, lineHeight: 1.5, textAlign: "center" },
+    footerSocials: { fontSize: 10, color: tpl.bandMuted, lineHeight: 1.5, textAlign: "center" },
     footerPlain: {
       borderTopWidth: 0.6,
       borderTopColor: tpl.line,
@@ -229,8 +292,16 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       paddingBottom: 44,
       alignItems: "center",
     },
-    footerContactPlain: { fontSize: 8, color: tpl.muted, lineHeight: 1.5, textAlign: "center" },
-    footerSocialsPlain: { fontSize: 8, color: tpl.faint, marginTop: 4, lineHeight: 1.5, textAlign: "center" },
+    footerContactPlain: { fontSize: 10, color: tpl.muted, lineHeight: 1.5, textAlign: "center" },
+    footerSocialsPlain: { fontSize: 10, color: tpl.faint, lineHeight: 1.5, textAlign: "center" },
+    socialsRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: 5,
+    },
+    socialItem: { flexDirection: "row", alignItems: "center", marginHorizontal: 8, marginTop: 3 },
   })
 }
 
@@ -262,6 +333,39 @@ function FlowerPattern({ color }: { color: string }) {
   )
 }
 
+function PdfSocialIcon({ kind, color, size }: { kind: SocialKey; color: string; size: number }) {
+  const icon = SOCIAL_ICONS[kind]
+  const stroke = { stroke: color, strokeWidth: SOCIAL_STROKE_WIDTH }
+  return (
+    <Svg style={{ marginRight: 4 }} width={size} height={size} viewBox={icon.viewBox}>
+      {icon.shapes.map((shape, i) => {
+        if (shape.t === "path") {
+          return shape.mode === "stroke" ? (
+            <Path key={i} d={shape.d} fill="none" {...stroke} />
+          ) : (
+            <Path key={i} d={shape.d} fill={color} />
+          )
+        }
+        if (shape.t === "circle") {
+          return shape.mode === "stroke" ? (
+            <Circle key={i} cx={shape.cx} cy={shape.cy} r={shape.r} fill="none" {...stroke} />
+          ) : (
+            <Circle key={i} cx={shape.cx} cy={shape.cy} r={shape.r} fill={color} />
+          )
+        }
+        if (shape.t === "ellipse") {
+          return shape.mode === "stroke" ? (
+            <Ellipse key={i} cx={shape.cx} cy={shape.cy} rx={shape.rx} ry={shape.ry} fill="none" {...stroke} />
+          ) : (
+            <Ellipse key={i} cx={shape.cx} cy={shape.cy} rx={shape.rx} ry={shape.ry} fill={color} />
+          )
+        }
+        return <Line key={i} x1={shape.x1} y1={shape.y1} x2={shape.x2} y2={shape.y2} {...stroke} />
+      })}
+    </Svg>
+  )
+}
+
 export function LetterPdf({
   doc,
   company,
@@ -280,8 +384,8 @@ export function LetterPdf({
   const waves = footerWaves(PAGE_W, 100)
   const topWaves = headerWaves(PAGE_W, 34)
   const contactLine = companyContactLine(company)
-  const socialsLine = companySocialsLine(company)
-  const hasFooter = Boolean(contactLine || socialsLine)
+  const socials = companySocials(company)
+  const hasFooter = Boolean(contactLine || socials.length)
 
   return (
     <Document title={`${doc.title} — ${client?.name ?? doc.number}`} author={company.name}>
@@ -326,7 +430,47 @@ export function LetterPdf({
             </>
           ) : null}
 
-          {tpl.band ? (
+          {tpl.layout === "classic" ? (
+            <View style={s.classicHeader}>
+              {company.logo ? (
+                // eslint-disable-next-line jsx-a11y/alt-text
+                <Image src={company.logo} style={s.classicLogo} />
+              ) : null}
+              <Text style={s.classicName}>{company.name}</Text>
+              {contactLine ? <Text style={s.classicMeta}>{contactLine}</Text> : null}
+              {company.regNo ? <Text style={s.classicMeta}>RC {company.regNo}</Text> : null}
+              <View style={s.classicRule} />
+              <View style={s.classicMetaRow}>
+                <Text style={s.classicDate}>{formatLetterDate(doc.date)}</Text>
+                <Text style={s.classicRef}>Ref: {doc.number}</Text>
+              </View>
+            </View>
+          ) : tpl.layout === "banner" ? (
+            <View style={s.bandWrap}>
+              <View style={s.bannerHeader}>
+                {company.logo ? (
+                  <View style={s.bannerLogoChip}>
+                    {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                    <Image src={company.logo} style={s.bannerLogo} />
+                  </View>
+                ) : null}
+                <Text style={s.bannerName}>{company.name}</Text>
+                {contactLine ? <Text style={s.bannerMeta}>{contactLine}</Text> : null}
+                {company.regNo ? <Text style={s.bannerMeta}>RC {company.regNo}</Text> : null}
+                <View style={s.bannerMetaRow}>
+                  <Text style={s.bannerDate}>{formatLetterDate(doc.date)}</Text>
+                  <Text style={s.bannerRef}>Ref: {doc.number}</Text>
+                </View>
+              </View>
+              <View style={s.accentStrip} />
+              {tpl.wave ? (
+                <Svg style={s.headerWaveSvg} viewBox={`0 0 ${PAGE_W} 34`} preserveAspectRatio="none">
+                  <Path d={topWaves.main} fill={tpl.bandBg} />
+                  <Path d={topWaves.accent} fill={tpl.accentStrip} />
+                </Svg>
+              ) : null}
+            </View>
+          ) : tpl.band ? (
             <View style={s.bandWrap}>
               <View style={s.headerBand}>
                 <View style={s.brandRow}>
@@ -386,7 +530,7 @@ export function LetterPdf({
             style={[
               s.body,
               ...(tpl.wave && !hasFooter ? [{ paddingBottom: 118 }] : []),
-              ...(!tpl.band ? [{ paddingTop: 34 }] : []),
+              ...(!tpl.band ? [{ paddingTop: tpl.layout === "classic" ? 20 : 34 }] : []),
             ]}
           >
             <View style={s.content}>
@@ -449,8 +593,13 @@ export function LetterPdf({
                   </View>
                 ) : null}
                 <View style={s.signLine} />
-                <Text style={s.signRole}>{doc.signatoryRole || company.signatoryRole}</Text>
+                <Text style={s.signRole}>
+                  {company.signatoryName || doc.signatoryRole || company.signatoryRole}
+                </Text>
                 <Text style={s.signFor}>For: {company.name}</Text>
+                {company.signatoryName ? (
+                  <Text style={s.signFor}>{doc.signatoryRole || company.signatoryRole}</Text>
+                ) : null}
               </View>
             </View>
           </View>
@@ -458,8 +607,21 @@ export function LetterPdf({
           {hasFooter ? (
             <View style={tpl.band ? s.footerBand : s.footerPlain}>
               <Text style={tpl.band ? s.footerContact : s.footerContactPlain}>{contactLine}</Text>
-              {socialsLine ? (
-                <Text style={tpl.band ? s.footerSocials : s.footerSocialsPlain}>{socialsLine}</Text>
+              {socials.length ? (
+                <View style={s.socialsRow}>
+                  {socials.map((entry) => (
+                    <View key={entry.key} style={s.socialItem} wrap={false}>
+                      <PdfSocialIcon
+                        kind={entry.key}
+                        color={tpl.band ? tpl.bandMuted : tpl.faint}
+                        size={10}
+                      />
+                      <Text style={tpl.band ? s.footerSocials : s.footerSocialsPlain}>
+                        {entry.value}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
               ) : null}
             </View>
           ) : null}

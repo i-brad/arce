@@ -110,7 +110,7 @@ function EditorInner({
           <DocumentEditor doc={draft} clients={clients} onChange={setDraft} />
         </div>
 
-        <div className="print-reset sticky top-8 self-start overflow-x-auto">
+        <div className="print-hide print-reset sticky top-8 self-start overflow-x-auto">
           <div className="origin-top-left scale-[0.78]">
             <DocumentPage doc={draft} company={company} client={client} />
           </div>

@@ -1,6 +1,16 @@
 import type { Company, DocType, InvoiceDocument, LineItem } from "@/lib/data/types"
+import type { SocialKey } from "./social-icons"
 import { formatNaira, numberToNairaWords } from "@/lib/utils/currency"
 import { uid } from "@/lib/utils/id"
+
+const SOCIAL_LABELS: Record<SocialKey, string> = {
+  website: "Website",
+  instagram: "Instagram",
+  facebook: "Facebook",
+  twitter: "X",
+  tiktok: "TikTok",
+  linkedin: "LinkedIn",
+}
 
 export function allItems(doc: Pick<InvoiceDocument, "sections">): LineItem[] {
   return doc.sections.flatMap((section) => section.items)
@@ -61,6 +71,26 @@ export function companySocialsLine(company: Company): string {
   return parts.join(" • ")
 }
 
+export interface SocialEntry {
+  key: SocialKey
+  label: string
+  value: string
+}
+
+export function companySocials(company: Company): SocialEntry[] {
+  const entries: Array<[SocialKey, string]> = [
+    ["website", company.website ?? ""],
+    ["instagram", company.instagram ?? ""],
+    ["facebook", company.facebook ?? ""],
+    ["twitter", company.twitter ?? ""],
+    ["tiktok", company.tiktok ?? ""],
+    ["linkedin", company.linkedin ?? ""],
+  ]
+  return entries
+    .filter(([, value]) => value.trim())
+    .map(([key, value]) => ({ key, label: SOCIAL_LABELS[key], value: value.trim() }))
+}
+
 const LETTER_MONTHS = [
   "JANUARY",
   "FEBRUARY",
@@ -96,7 +126,7 @@ export function newDocument(type: DocType, company: Company): InvoiceDocument {
     salutation: "Dear Sir/Madam,",
     body: invoice
       ? "This is to acknowledge the receipt of your payment of {words} ({amount}) towards the following:\n\nKindly note the breakdown of the amount due is as follows;"
-      : "This is to acknowledge the receipt of your payment of {words} ({amount}) towards the under-listed property transaction. This payment excludes statutory fees where applicable.",
+      : "This is to acknowledge the receipt of your payment of {words} ({amount}) towards the under-listed items. This payment excludes statutory fees where applicable.",
     breakdownHeading: invoice
       ? "The breakdown of the amount due is as follows;"
       : "The breakdown of the amount paid is as follows;",

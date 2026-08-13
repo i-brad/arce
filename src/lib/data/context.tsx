@@ -10,12 +10,16 @@ import {
   type ReactNode,
 } from "react"
 import { LocalStorageRepository } from "./local-storage-repository"
+import { HttpRepository } from "./http-repository"
+import { useAuth } from "@/lib/auth/auth-context"
+import { supabaseConfigured } from "@/lib/env"
 import type { Client, Company, InvoiceDocument } from "./types"
 
-const repo = new LocalStorageRepository()
+const repo = supabaseConfigured ? new HttpRepository() : new LocalStorageRepository()
 
 interface DataContextValue {
   ready: boolean
+  error: string | null
   company: Company | null
   clients: Client[]
   documents: InvoiceDocument[]
@@ -29,71 +33,100 @@ interface DataContextValue {
 const DataContext = createContext<DataContextValue | null>(null)
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [ready, setReady] = useState(false)
-  const [company, setCompany] = useState<Company | null>(null)
-  const [clients, setClients] = useState<Client[]>([])
-  const [documents, setDocuments] = useState<InvoiceDocument[]>([])
+  const { user } = useAuth()
+  const userId = user?.id ?? null
+  const [state, setState] = useState<{
+    loadedFor: string | null
+    company: Company | null
+    clients: Client[]
+    documents: InvoiceDocument[]
+    error: string | null
+  }>({ loadedFor: null, company: null, clients: [], documents: [], error: null })
 
   useEffect(() => {
+    if (supabaseConfigured && !userId) return
     let mounted = true
     void (async () => {
-      const [company, clients, documents] = await Promise.all([
-        repo.getCompany(),
-        repo.listClients(),
-        repo.listDocuments(),
-      ])
-      if (!mounted) return
-      setCompany(company)
-      setClients(clients)
-      setDocuments(documents.sort((a, b) => b.date.localeCompare(a.date)))
-      setReady(true)
+      try {
+        const [company, clients, documents] = await Promise.all([
+          repo.getCompany(),
+          repo.listClients(),
+          repo.listDocuments(),
+        ])
+        if (!mounted) return
+        setState({
+          loadedFor: userId,
+          company,
+          clients,
+          documents: documents.sort((a, b) => b.date.localeCompare(a.date)),
+          error: null,
+        })
+      } catch (err) {
+        if (!mounted) return
+        if (supabaseConfigured && err instanceof Error && err.message === "Not signed in") {
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+          window.location.href = "/login"
+          return
+        }
+        setState((prev) => ({ ...prev, error: err instanceof Error ? err.message : String(err) }))
+      }
     })()
     return () => {
       mounted = false
     }
-  }, [])
+  }, [userId])
+
+  const ready = supabaseConfigured
+    ? Boolean(state.loadedFor) && state.loadedFor === userId
+    : Boolean(state.loadedFor)
+
+  const { company, clients, documents, error } = state
 
   const saveCompany = useCallback(async (next: Company) => {
     await repo.saveCompany(next)
-    setCompany(next)
+    setState((prev) => ({ ...prev, company: next }))
   }, [])
 
   const saveClient = useCallback(async (next: Client) => {
     await repo.saveClient(next)
-    setClients((prev) => {
-      const index = prev.findIndex((c) => c.id === next.id)
-      if (index === -1) return [next, ...prev]
-      const copy = [...prev]
-      copy[index] = next
-      return copy
+    setState((prev) => {
+      const index = prev.clients.findIndex((c) => c.id === next.id)
+      const clients =
+        index === -1 ? [next, ...prev.clients] : prev.clients.map((c, i) => (i === index ? next : c))
+      return { ...prev, clients }
     })
   }, [])
 
   const deleteClient = useCallback(async (id: string) => {
     await repo.deleteClient(id)
-    setClients((prev) => prev.filter((c) => c.id !== id))
-    setDocuments((prev) => prev.filter((d) => d.clientId !== id))
+    setState((prev) => ({
+      ...prev,
+      clients: prev.clients.filter((c) => c.id !== id),
+      documents: prev.documents.filter((d) => d.clientId !== id),
+    }))
   }, [])
 
   const saveDocument = useCallback(async (next: InvoiceDocument) => {
     await repo.saveDocument(next)
-    setDocuments((prev) => {
-      const index = prev.findIndex((d) => d.id === next.id)
-      if (index === -1) return [next, ...prev]
-      const copy = [...prev]
-      copy[index] = next
-      return copy
+    setState((prev) => {
+      const index = prev.documents.findIndex((d) => d.id === next.id)
+      const documents =
+        index === -1
+          ? [next, ...prev.documents]
+          : prev.documents.map((d, i) => (i === index ? next : d))
+      return { ...prev, documents }
     })
   }, [])
 
   const deleteDocument = useCallback(async (id: string) => {
     await repo.deleteDocument(id)
-    setDocuments((prev) => prev.filter((d) => d.id !== id))
+    setState((prev) => ({ ...prev, documents: prev.documents.filter((d) => d.id !== id) }))
   }, [])
 
   const value = useMemo(
     () => ({
       ready,
+      error,
       company,
       clients,
       documents,
@@ -103,7 +136,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       saveDocument,
       deleteDocument,
     }),
-    [ready, company, clients, documents, saveCompany, saveClient, deleteClient, saveDocument, deleteDocument],
+    [ready, error, company, clients, documents, saveCompany, saveClient, deleteClient, saveDocument, deleteDocument],
   )
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>

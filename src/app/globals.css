@@ -130,14 +130,21 @@ body {
     right: 0;
     margin: 0 !important;
     padding: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .document-page {
     box-shadow: none !important;
     margin: 0 !important;
     width: 210mm !important;
+    height: 297mm !important;
     min-height: 297mm !important;
+    max-height: 297mm !important;
+    overflow: hidden !important;
     border-radius: 0 !important;
     border: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .print-reset {
     transform: none !important;

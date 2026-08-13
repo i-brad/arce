@@ -1,9 +1,9 @@
 # Acre
 
-Invoicing and payment acknowledgment letters for real estate agents.
+Invoicing and payment acknowledgment letters for service businesses.
 
 Acre is a local-first web app for drafting, previewing, and exporting the
-formal acknowledgment letters and invoices agents send to property buyers.
+formal acknowledgment letters and invoices you send to clients.
 Everything is stored in your browser — no account, no server.
 
 ## Features
@@ -37,8 +37,9 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see
 the result.
 
-The app seeds a sample company, client, and letter on first run so you can
-explore before entering your own data.
+When Supabase is not configured the app runs entirely in your browser and
+seeds a sample company so you can explore before entering your own data.
+No sample clients or documents are created automatically.
 
 ## Scripts
 

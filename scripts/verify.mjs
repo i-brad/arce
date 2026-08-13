@@ -5,6 +5,21 @@ const BASE = "http://localhost:3000"
 const SHOTS = "/tmp/opencode"
 mkdirSync(SHOTS, { recursive: true })
 
+const MONTHS = [
+  "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+  "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER",
+]
+function letterDate(d) {
+  const day = d.getDate()
+  const suffix =
+    day % 10 === 1 && day !== 11 ? "ST"
+    : day % 10 === 2 && day !== 12 ? "ND"
+    : day % 10 === 3 && day !== 13 ? "RD" : "TH"
+  return `${day}${suffix} ${MONTHS[d.getMonth()]}, ${d.getFullYear()}`
+}
+const TODAY_LETTER = letterDate(new Date())
+const THIS_YEAR = new Date().getFullYear()
+
 const errors = []
 const browser = await chromium.launch()
 const page = await browser.newPage()
@@ -15,7 +30,8 @@ page.on("pageerror", (err) => errors.push(`[pageerror] ${err.message}`))
 
 let failures = 0
 async function check(url, expectedTexts, label) {
-  await page.goto(`${BASE}${url}`, { waitUntil: "networkidle" })
+  const target = url.startsWith("http") ? url : `${BASE}${url}`
+  await page.goto(target, { waitUntil: "networkidle" })
   const body = await page.locator("body").innerText()
   const missing = expectedTexts.filter((t) => !body.includes(t))
   if (missing.length) failures++
@@ -26,14 +42,15 @@ const hasPatternLayer = async () =>
   (await page.locator(".document-page pattern").count()) > 0 ||
   (await page.locator('.document-page img[aria-hidden="true"]').count()) > 0
 
+// A fresh user starts with an empty dashboard and lists (no sample data is seeded)
 await check("/", [
   "Recent documents",
-  "LETTER OF ACKNOWLEDGEMENT",
-  "MR OLUWAFEMI ALOFE OLUWADAMILARE",
-], "dashboard")
+  "No documents yet.",
+  "No clients yet.",
+], "dashboard (empty)")
 
-await check("/documents", ["LETTER OF ACKNOWLEDGEMENT", "ACK-2022-001"], "documents list")
-await check("/clients", ["MR OLUWAFEMI ALOFE OLUWADAMILARE", "NO 13, YEMI FAROUNBI"], "clients list")
+await check("/documents", ["No documents yet.", "New document"], "documents list (empty)")
+await check("/clients", ["No clients yet.", "Add client"], "clients list (empty)")
 await check("/settings", [
   "Upload logo",
   "WhatsApp",
@@ -46,10 +63,18 @@ const companyInput = await page.getByLabel("Company name").inputValue()
 if (companyInput !== "Silver Pacific Homes") failures++
 console.log(`[settings] company input: ${companyInput === "Silver Pacific Homes" ? "OK" : "FAIL"}`)
 
-await check("/documents/doc_alofe_ack", [
+// Load the acknowledgment sample from the new-document page
+await page.goto(`${BASE}/documents/new`, { waitUntil: "networkidle" })
+await page.getByRole("button", { name: /Acknowledgment letter/ }).click()
+await page.waitForURL(/\/documents\//)
+await page.waitForTimeout(600)
+const sampleUrl = page.url()
+console.log(`[sample] loaded sample document: ${sampleUrl}`)
+
+await check(sampleUrl, [
   "Silver Pacific Homes",
   "Southern Atlantic Estate",
-  "8TH APRIL, 2022",
+  TODAY_LETTER,
   "LETTER OF ACKNOWLEDGEMENT",
   "Three Million, Seven Hundred Thousand Naira only",
   "N 3,700,000",
@@ -90,12 +115,12 @@ if (amountWidth > 260) {
 const dateWraps = await page
   .locator(".document-page")
   .first()
-  .evaluate((root) => {
+  .evaluate((root, year) => {
     const el = Array.from(root.querySelectorAll("p")).find(
-      (p) => p.textContent && p.textContent.includes("2022"),
+      (p) => p.textContent && p.textContent.includes(String(year)),
     )
     return el ? el.scrollWidth > el.clientWidth + 1 : false
-  })
+  }, THIS_YEAR)
 if (dateWraps) {
   failures++
   console.log("[editor] date wraps to multiple lines")
@@ -103,12 +128,12 @@ if (dateWraps) {
   console.log("[editor] date on one line: OK")
 }
 
-// Background pattern must be OFF by default on the seeded document
+// Background pattern must be OFF by default on the sample document
 if (await hasPatternLayer()) {
   failures++
-  console.log("[pattern] seed should have patterns off by default")
+  console.log("[pattern] sample should have patterns off by default")
 } else {
-  console.log("[pattern] off by default on seed: OK")
+  console.log("[pattern] off by default on sample: OK")
 }
 
 // Template switching: estate has a footer wave, minimal has none, navy brings it back
@@ -193,6 +218,7 @@ await page.locator('input[type="file"]').first().setInputFiles({
   mimeType: "image/png",
   buffer: png,
 })
+await page.getByText("Replace logo").waitFor({ timeout: 5000 })
 await page.getByText("Save settings").click()
 await page.waitForTimeout(600)
 
@@ -208,13 +234,14 @@ await page.locator('input[type="file"]').nth(1).setInputFiles({
   mimeType: "image/png",
   buffer: png,
 })
+await page.getByText("Replace pattern").waitFor({ timeout: 5000 })
 await page.getByText("Save settings").click()
 await page.waitForTimeout(600)
 const patternSettingsBody = await page.locator("body").innerText()
 if (!patternSettingsBody.includes("Replace pattern")) failures++
 console.log("[settings] " + (patternSettingsBody.includes("Replace pattern") ? "pattern upload: OK" : "FAIL (pattern not saved)"))
 
-await page.goto(`${BASE}/documents/doc_alofe_ack`, { waitUntil: "networkidle" })
+await page.goto(sampleUrl, { waitUntil: "networkidle" })
 const docBody = await page.locator("body").innerText()
 const expectedDoc = [
   "Casa Khanya",
@@ -290,7 +317,7 @@ if (!printOk) {
 
 // New document: total breakdown enabled by default, pattern toggle works
 await page.goto(`${BASE}/documents/new`, { waitUntil: "networkidle" })
-await page.getByLabel("Client").selectOption("client_alofe")
+await page.getByLabel("Client").selectOption({ label: "MR OLUWAFEMI ALOFE OLUWADAMILARE" })
 await page.getByLabel("Reference number").fill("VERIFY-001")
 await page.getByText("Create & edit").click()
 await page.waitForURL(/\/documents\//)
@@ -353,6 +380,8 @@ if (page.url().endsWith("/documents")) {
 await page.setViewportSize({ width: 1280, height: 800 })
 
 // Screenshots
+await page.goto(sampleUrl, { waitUntil: "networkidle" })
+await page.waitForTimeout(400)
 await page.screenshot({ path: `${SHOTS}/editor.png`, fullPage: true })
 await page.goto(BASE, { waitUntil: "networkidle" })
 await page.waitForTimeout(400)

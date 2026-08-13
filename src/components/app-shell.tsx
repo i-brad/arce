@@ -1,39 +1,147 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useEffect, useState, type ReactNode } from "react"
-import { cn } from "@/lib/utils/cn"
-import { LinkButton } from "@/components/ui/button"
+import { LinkButton } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth/auth-context";
+import { cn } from "@/lib/utils/cn";
+import type { User } from "@supabase/supabase-js";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+
+function UserAvatar({ user, size = 28 }: { user: User; size?: number }) {
+  const meta = user.user_metadata ?? {};
+  const avatarUrl: string | undefined =
+    meta.avatar_url ??
+    meta.picture ??
+    user.identities?.[0]?.identity_data?.avatar_url;
+  const name: string = meta.full_name ?? meta.name ?? "";
+  const initials = (name || user.email || "?").slice(0, 2).toUpperCase();
+  if (avatarUrl) {
+    return (
+      <Image
+        src={avatarUrl}
+        alt=""
+        width={size}
+        height={size}
+        unoptimized
+        className="shrink-0 rounded-full object-cover"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+  return (
+    <span
+      className="flex shrink-0 items-center justify-center rounded-full bg-accent font-bold text-white"
+      style={{ width: size, height: size, fontSize: Math.max(10, size * 0.38) }}
+      aria-hidden
+    >
+      {initials}
+    </span>
+  );
+}
+
+function NavIcon({ children }: { children: ReactNode }) {
+  return (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 18 18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="shrink-0"
+    >
+      {children}
+    </svg>
+  );
+}
 
 const navItems = [
-  { href: "/", label: "Dashboard" },
-  { href: "/documents", label: "Documents" },
-  { href: "/clients", label: "Clients" },
-  { href: "/settings", label: "Settings" },
-]
+  {
+    href: "/",
+    label: "Dashboard",
+    icon: (
+      <NavIcon>
+        <rect x="3" y="3" width="5" height="5" rx="1.2" />
+        <rect x="10" y="3" width="5" height="5" rx="1.2" />
+        <rect x="3" y="10" width="5" height="5" rx="1.2" />
+        <rect x="10" y="10" width="5" height="5" rx="1.2" />
+      </NavIcon>
+    ),
+  },
+  {
+    href: "/documents",
+    label: "Documents",
+    icon: (
+      <NavIcon>
+        <path d="M6 2.5h4.5L14 6v9.5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-12a1 1 0 0 1 1-1Z" />
+        <path d="M10 2.5V6h3.5" />
+      </NavIcon>
+    ),
+  },
+  {
+    href: "/clients",
+    label: "Clients",
+    icon: (
+      <NavIcon>
+        <circle cx="6.5" cy="6" r="2.5" />
+        <path d="M2.5 14.5c.6-2.2 2.2-3.5 4-3.5s3.4 1.3 4 3.5" />
+        <circle cx="12.5" cy="7" r="2" />
+        <path d="M11 11.4c1.5-.2 3 .6 3.8 2.3" />
+      </NavIcon>
+    ),
+  },
+  {
+    href: "/settings",
+    label: "Settings",
+    icon: (
+      <NavIcon>
+        <path d="M3 4.5h12" />
+        <path d="M3 9h8" />
+        <path d="M3 13.5h12" />
+        <circle cx="12.5" cy="4.5" r="1.6" />
+        <circle cx="13.5" cy="9" r="1.6" />
+        <circle cx="11" cy="13.5" r="1.6" />
+      </NavIcon>
+    ),
+  },
+];
 
 function Brand({ onClick }: { onClick?: () => void }) {
   return (
-    <Link href="/" onClick={onClick} className="flex h-16 items-center gap-2.5 px-5">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand-mark.png" alt="" aria-hidden className="size-7 rounded-[7px]" />
+    <Link
+      href="/"
+      onClick={onClick}
+      className="flex h-16 items-center gap-2.5 px-5"
+    >
+      <Image
+        src="/brand-mark.png"
+        alt=""
+        aria-hidden
+        width={28}
+        height={28}
+        className="size-7 rounded-[7px]"
+      />
       <span className="leading-tight">
         <span className="block text-[15px] font-semibold tracking-tight text-ink">
           Acre
         </span>
-        <span className="block text-[11px] text-faint">Real Estate Invoicing</span>
+        <span className="block text-[11px] text-faint">Invoicing Letters</span>
       </span>
     </Link>
-  )
+  );
 }
 
 function NavLinks({
   active,
   onNavigate,
 }: {
-  active: (href: string) => boolean
-  onNavigate?: () => void
+  active: (href: string) => boolean;
+  onNavigate?: () => void;
 }) {
   return (
     <nav className="flex-1 px-3 py-4">
@@ -44,19 +152,81 @@ function NavLinks({
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "flex h-9 items-center rounded-[6px] px-3 text-sm transition-colors",
+                "flex h-9 items-center gap-2.5 rounded-[6px] px-3 text-sm transition-colors",
                 active(item.href)
                   ? "bg-accent-soft font-medium text-accent"
                   : "text-muted hover:bg-ink/[0.04] hover:text-ink",
               )}
             >
+              {item.icon}
               {item.label}
             </Link>
           </li>
         ))}
       </ul>
     </nav>
-  )
+  );
+}
+
+function UserMenu() {
+  const { user, signOut } = useAuth();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  if (!user) return null;
+
+  const meta = user.user_metadata ?? {};
+  const name: string = meta.full_name ?? meta.name ?? user.email ?? "";
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        aria-label="Account menu"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2.5 rounded-full pr-0.5 pl-3 py-1 transition ring-accent/30 hover:bg-ink/[0.04] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      >
+        <span className="hidden max-w-40 truncate text-sm font-medium text-ink lg:block">
+          {name}
+        </span>
+        <UserAvatar user={user} />
+      </button>
+      {open ? (
+        <div className="absolute right-0 top-full mt-2 w-60 rounded-[10px] border border-line bg-panel p-2 shadow-lg">
+          <div className="px-3 py-2">
+            <p className="truncate text-sm font-medium text-ink">{name}</p>
+            <p className="truncate text-xs text-muted">{user.email}</p>
+          </div>
+          <div className="my-1 border-t border-line" />
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            className="flex w-full items-center rounded-[6px] px-3 py-2 text-sm text-muted transition-colors hover:bg-ink/[0.04] hover:text-ink"
+          >
+            Sign out
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function SidebarFooter() {
@@ -75,33 +245,36 @@ function SidebarFooter() {
         </a>
       </p>
     </div>
-  )
+  );
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const pathname = usePathname()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href)
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-  const isEditor = /^\/documents\/[^/]+$/.test(pathname)
+  const activeLabel =
+    navItems.find((item) => isActive(item.href))?.label ?? "Acre";
+
+  const isEditor = /^\/documents\/[^/]+$/.test(pathname);
 
   useEffect(() => {
-    if (!menuOpen) return
+    if (!menuOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false)
-    }
-    document.addEventListener("keydown", onKey)
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = "hidden"
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener("keydown", onKey)
-      document.body.style.overflow = prevOverflow
-    }
-  }, [menuOpen])
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [menuOpen]);
 
-  const close = () => setMenuOpen(false)
+  const close = () => setMenuOpen(false);
 
   return (
     <div className="min-h-screen">
@@ -113,18 +286,40 @@ export function AppShell({ children }: { children: ReactNode }) {
           onClick={() => setMenuOpen(true)}
           className="flex size-9 items-center justify-center rounded-[7px] text-muted transition-colors hover:bg-ink/[0.04] hover:text-ink"
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
-            <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            aria-hidden
+          >
+            <path
+              d="M3 5h14M3 10h14M3 15h14"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+            />
           </svg>
         </button>
         <Link href="/" className="flex items-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand-mark.png" alt="" aria-hidden className="size-7 rounded-[7px]" />
-          <span className="text-[15px] font-semibold tracking-tight text-ink">Acre</span>
+          <Image
+            src="/brand-mark.png"
+            alt=""
+            aria-hidden
+            width={28}
+            height={28}
+            className="size-7 rounded-[7px]"
+          />
+          <span className="text-[15px] font-semibold tracking-tight text-ink">
+            Acre
+          </span>
         </Link>
-        <LinkButton href="/documents/new" size="sm">
-          New
-        </LinkButton>
+        <div className="flex items-center gap-2">
+          <LinkButton href="/documents/new" size="sm">
+            New
+          </LinkButton>
+          <UserMenu />
+        </div>
       </header>
 
       {/* Desktop sidebar */}
@@ -143,7 +338,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Mobile drawer */}
       <div
-        className={cn("print-hide fixed inset-0 z-40 lg:hidden", menuOpen ? "" : "pointer-events-none")}
+        className={cn(
+          "print-hide fixed inset-0 z-40 lg:hidden",
+          menuOpen ? "" : "pointer-events-none",
+        )}
         aria-hidden={!menuOpen}
       >
         <div
@@ -167,14 +365,30 @@ export function AppShell({ children }: { children: ReactNode }) {
               onClick={close}
               className="mr-3 flex size-8 items-center justify-center rounded-[7px] text-muted transition-colors hover:bg-ink/[0.04] hover:text-ink"
             >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-                <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                aria-hidden
+              >
+                <path
+                  d="M4 4l10 10M14 4L4 14"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
               </svg>
             </button>
           </div>
           <NavLinks active={isActive} onNavigate={close} />
           <div className="border-t border-line p-3">
-            <LinkButton href="/documents/new" size="md" className="w-full" onClick={close}>
+            <LinkButton
+              href="/documents/new"
+              size="md"
+              className="w-full"
+              onClick={close}
+            >
               New document
             </LinkButton>
           </div>
@@ -183,6 +397,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <main className="lg:ml-56">
+        <header className="print-hide sticky top-0 z-20 hidden h-14 items-center justify-between border-b border-line bg-panel px-6 lg:flex lg:px-10">
+          <p className="text-sm font-medium text-ink">{activeLabel}</p>
+          <UserMenu />
+        </header>
         <div
           className={cn(
             "mx-auto w-full px-4 py-6 sm:px-6 lg:px-10 lg:py-10",
@@ -193,5 +411,5 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </main>
     </div>
-  )
+  );
 }

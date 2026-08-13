@@ -1,6 +1,6 @@
 import type { Client, Company, InvoiceDocument } from "./types"
 import type { Repository } from "./repository"
-import { seedClients, seedCompany, seedDocuments } from "./seed"
+import { seedCompany } from "./seed"
 
 const KEY_COMPANY = "ire:company"
 const KEY_CLIENTS = "ire:clients"
@@ -28,8 +28,6 @@ function seedIfNeeded() {
   if (typeof window === "undefined") return
   if (window.localStorage.getItem(KEY_SEEDED)) return
   writeJson(KEY_COMPANY, seedCompany())
-  writeJson(KEY_CLIENTS, seedClients())
-  writeJson(KEY_DOCUMENTS, seedDocuments())
   window.localStorage.setItem(KEY_SEEDED, "true")
 }
 

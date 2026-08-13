@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { useData } from "@/lib/data/context"
 import type { Company } from "@/lib/data/types"
 import { templateList, type TemplateId } from "@/lib/documents/theme"
@@ -8,6 +9,26 @@ import { SignaturePad } from "@/components/settings/signature-pad"
 import { PageHeader } from "@/components/ui/misc"
 import { Button } from "@/components/ui/button"
 import { Field, Input, Select } from "@/components/ui/fields"
+import { uploadImage } from "@/lib/imagekit/upload"
+import { useAuth } from "@/lib/auth/auth-context"
+
+async function handleImageUpload(
+  file: File,
+  set: (patch: Partial<Company>) => void,
+  key: "logo" | "signature" | "patternImage",
+  setUploading: (busy: boolean) => void,
+  onError: (message: string) => void,
+) {
+  setUploading(true)
+  try {
+    const url = await uploadImage(file)
+    set({ [key]: url } as Partial<Company>)
+  } catch (err) {
+    onError(err instanceof Error ? err.message : "Upload failed")
+  } finally {
+    setUploading(false)
+  }
+}
 
 export default function SettingsPage() {
   const { ready, company, saveCompany } = useData()
@@ -26,18 +47,45 @@ function SettingsForm({
   saveCompany,
 }: {
   company: Company
-  saveCompany: (company: Company) => Promise<void>
+  saveCompany: (next: Company) => Promise<void>
 }) {
+  const { configured } = useAuth()
   const [form, setForm] = useState<Company>(company)
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [showPad, setShowPad] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const deleteAccount = async () => {
+    setDeleting(true)
+    try {
+      const res = await fetch("/api/account/delete", { method: "POST" })
+      if (!res.ok) throw new Error(`Delete failed (${res.status})`)
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.href = "/login?deleted=1"
+    } catch {
+      setDeleting(false)
+      setConfirmingDelete(false)
+    }
+  }
 
   const set = (patch: Partial<Company>) => setForm((prev) => ({ ...prev, ...patch }))
 
   const save = async () => {
-    await saveCompany(form)
-    setSaved(true)
-    window.setTimeout(() => setSaved(false), 2000)
+    setError(null)
+    setSaving(true)
+    try {
+      await saveCompany(form)
+      setSaved(true)
+      window.setTimeout(() => setSaved(false), 2000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save settings")
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -62,12 +110,18 @@ function SettingsForm({
         >
           <div className="flex items-center gap-4">
             {form.logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={form.logo}
-                alt="Company logo"
-                className="size-14 rounded-[6px] border border-line bg-white object-contain p-1"
-              />
+              <div className="flex size-14 items-center justify-center rounded-[6px] border border-line bg-white p-1">
+                <div className="relative h-full w-full">
+                  <Image
+                    src={form.logo}
+                    alt="Company logo"
+                    fill
+                    sizes="48px"
+                    unoptimized
+                    className="object-contain"
+                  />
+                </div>
+              </div>
             ) : (
               <div className="flex size-14 items-center justify-center rounded-[6px] border border-dashed border-line-strong text-[11px] text-faint">
                 None
@@ -79,12 +133,11 @@ function SettingsForm({
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
                 className="hidden"
+                disabled={uploading}
                 onChange={(e) => {
                   const file = e.target.files?.[0]
                   if (!file) return
-                  const reader = new FileReader()
-                  reader.onload = () => set({ logo: String(reader.result ?? "") })
-                  reader.readAsDataURL(file)
+                  void handleImageUpload(file, set, "logo", setUploading, setError)
                   e.target.value = ""
                 }}
               />
@@ -94,6 +147,7 @@ function SettingsForm({
                 Remove
               </Button>
             ) : null}
+            {uploading ? <span className="text-xs text-muted">Uploading…</span> : null}
           </div>
         </Field>
 
@@ -103,12 +157,18 @@ function SettingsForm({
         >
           <div className="flex items-center gap-4">
             {form.patternImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={form.patternImage}
-                alt="Background pattern preview"
-                className="size-14 rounded-[6px] border border-line bg-white object-cover p-0.5"
-              />
+              <div className="flex size-14 items-center justify-center rounded-[6px] border border-line bg-white p-0.5">
+                <div className="relative h-full w-full">
+                  <Image
+                    src={form.patternImage}
+                    alt="Background pattern preview"
+                    fill
+                    sizes="52px"
+                    unoptimized
+                    className="object-cover"
+                  />
+                </div>
+              </div>
             ) : (
               <div className="flex size-14 items-center justify-center rounded-[6px] border border-dashed border-line-strong text-[11px] text-faint">
                 None
@@ -120,12 +180,11 @@ function SettingsForm({
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
                 className="hidden"
+                disabled={uploading}
                 onChange={(e) => {
                   const file = e.target.files?.[0]
                   if (!file) return
-                  const reader = new FileReader()
-                  reader.onload = () => set({ patternImage: String(reader.result ?? "") })
-                  reader.readAsDataURL(file)
+                  void handleImageUpload(file, set, "patternImage", setUploading, setError)
                   e.target.value = ""
                 }}
               />
@@ -268,12 +327,18 @@ function SettingsForm({
         >
           <div className="flex flex-wrap items-center gap-4">
             {form.signature ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={form.signature}
-                alt="Signature preview"
-                className="h-16 rounded-[6px] border border-line bg-white object-contain p-1"
-              />
+              <div className="flex h-16 w-44 items-center justify-center rounded-[6px] border border-line bg-white p-1">
+                <div className="relative h-full w-full">
+                  <Image
+                    src={form.signature}
+                    alt="Signature preview"
+                    fill
+                    sizes="168px"
+                    unoptimized
+                    className="object-contain"
+                  />
+                </div>
+              </div>
             ) : (
               <div className="flex h-16 w-44 items-center justify-center rounded-[6px] border border-dashed border-line-strong text-[11px] text-faint">
                 None
@@ -285,12 +350,11 @@ function SettingsForm({
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
                 className="hidden"
+                disabled={uploading}
                 onChange={(e) => {
                   const file = e.target.files?.[0]
                   if (!file) return
-                  const reader = new FileReader()
-                  reader.onload = () => set({ signature: String(reader.result ?? "") })
-                  reader.readAsDataURL(file)
+                  void handleImageUpload(file, set, "signature", setUploading, setError)
                   e.target.value = ""
                 }}
               />
@@ -303,6 +367,7 @@ function SettingsForm({
                 Remove
               </Button>
             ) : null}
+            {uploading ? <span className="text-xs text-muted">Uploading…</span> : null}
           </div>
           {showPad ? (
             <div className="mt-3 rounded-[8px] border border-line p-4">
@@ -311,18 +376,70 @@ function SettingsForm({
               </p>
               <SignaturePad
                 onCancel={() => setShowPad(false)}
-                onSave={(dataUrl) => {
-                  set({ signature: dataUrl })
+                onSave={async (dataUrl) => {
                   setShowPad(false)
+                  setUploading(true)
+                  setError(null)
+                  try {
+                    const url = await uploadImage(dataUrl, "signature.png")
+                    set({ signature: url })
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : "Signature upload failed")
+                  } finally {
+                    setUploading(false)
+                  }
                 }}
               />
             </div>
           ) : null}
         </Field>
-        <div className="flex justify-end pt-2">
-          <Button onClick={save}>{saved ? "Saved" : "Save settings"}</Button>
+        <div className="flex items-center justify-end gap-3 pt-2">
+          {error ? <p className="text-[13px] text-danger">{error}</p> : null}
+          <Button onClick={() => void save()} disabled={saving}>
+            {saving ? "Saving…" : saved ? "Saved" : "Save settings"}
+          </Button>
         </div>
       </div>
+
+      {configured ? (
+        <div className="mt-6 rounded-[12px] border border-danger/30 bg-panel">
+          <div className="p-6">
+            <h2 className="text-[13px] font-bold uppercase tracking-wide text-danger">
+              Danger zone
+            </h2>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted">
+              Permanently deletes your company, clients, documents and sign-in
+              from Supabase. This cannot be undone.
+            </p>
+            <div className="mt-4 flex items-center gap-3">
+              {!confirmingDelete ? (
+                <Button variant="danger" type="button" onClick={() => setConfirmingDelete(true)}>
+                  Delete my account and all data
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="danger"
+                    type="button"
+                    disabled={deleting}
+                    onClick={() => void deleteAccount()}
+                  >
+                    {deleting ? "Deleting…" : "Yes, delete everything"}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    type="button"
+                    disabled={deleting}
+                    onClick={() => setConfirmingDelete(false)}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

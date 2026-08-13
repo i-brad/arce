@@ -1,14 +1,51 @@
 import type { Client, Company, InvoiceDocument } from "@/lib/data/types"
 import {
   companyContactLine,
-  companySocialsLine,
+  companySocials,
   formatLetterDate,
   renderTemplate,
   totalOf,
 } from "@/lib/documents/document-utils"
+import { SOCIAL_ICONS, SOCIAL_STROKE_WIDTH, type SocialKey } from "@/lib/documents/social-icons"
 import { footerWaves, getTemplate, headerWaves } from "@/lib/documents/theme"
 import { FLOWER_CENTER_R, FLOWER_PETAL_R, FLOWER_SPACING, flowerPath } from "@/lib/documents/patterns"
 import { formatNaira } from "@/lib/utils/currency"
+import Image from "next/image"
+
+function SocialIcon({ kind, size, color }: { kind: SocialKey; size: number; color: string }) {
+  const icon = SOCIAL_ICONS[kind]
+  return (
+    <svg viewBox={icon.viewBox} width={size} height={size} aria-hidden focusable="false">
+      {icon.shapes.map((shape, i) => {
+        const stroke = shape.mode === "stroke"
+        if (shape.t === "path") {
+          return stroke ? (
+            <path key={i} d={shape.d} fill="none" stroke={color} strokeWidth={SOCIAL_STROKE_WIDTH} strokeLinecap="round" />
+          ) : (
+            <path key={i} d={shape.d} fill={color} />
+          )
+        }
+        if (shape.t === "circle") {
+          return stroke ? (
+            <circle key={i} cx={shape.cx} cy={shape.cy} r={shape.r} fill="none" stroke={color} strokeWidth={SOCIAL_STROKE_WIDTH} strokeLinecap="round" />
+          ) : (
+            <circle key={i} cx={shape.cx} cy={shape.cy} r={shape.r} fill={color} />
+          )
+        }
+        if (shape.t === "ellipse") {
+          return stroke ? (
+            <ellipse key={i} cx={shape.cx} cy={shape.cy} rx={shape.rx} ry={shape.ry} fill="none" stroke={color} strokeWidth={SOCIAL_STROKE_WIDTH} strokeLinecap="round" />
+          ) : (
+            <ellipse key={i} cx={shape.cx} cy={shape.cy} rx={shape.rx} ry={shape.ry} fill={color} />
+          )
+        }
+        return (
+          <line key={i} x1={shape.x1} y1={shape.y1} x2={shape.x2} y2={shape.y2} fill="none" stroke={color} strokeWidth={SOCIAL_STROKE_WIDTH} strokeLinecap="round" />
+        )
+      })}
+    </svg>
+  )
+}
 
 export function DocumentPage({
   doc,
@@ -27,8 +64,8 @@ export function DocumentPage({
   const waves = footerWaves(794, 96)
   const topWaves = headerWaves(794, 40)
   const contactLine = companyContactLine(company)
-  const socialsLine = companySocialsLine(company)
-  const hasFooter = Boolean(contactLine || socialsLine)
+  const socials = companySocials(company)
+  const hasFooter = Boolean(contactLine || socials.length)
   const pt = 4 / 3
   const tile = FLOWER_SPACING * pt
   const flower = flowerPath(tile / 2, tile / 2, FLOWER_PETAL_R * pt, FLOWER_CENTER_R * pt)
@@ -42,12 +79,14 @@ export function DocumentPage({
       {/* Background pattern: uploaded image, else template flower pattern */}
       {doc.showPattern ? (
         company.patternImage ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
+          <Image
             src={company.patternImage}
             alt=""
             aria-hidden
-            className="pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover opacity-40"
+            fill
+            sizes="100vw"
+            unoptimized
+            className="pointer-events-none z-[1] object-cover opacity-40"
           />
         ) : tpl.pattern ? (
           <svg aria-hidden className="pointer-events-none absolute inset-0 z-[1] h-full w-full">
@@ -73,7 +112,118 @@ export function DocumentPage({
         ) : null
       ) : null}
 
-      {tpl.band ? (
+      {tpl.layout === "classic" ? (
+        <div className="relative z-10 px-[26mm] pt-[16mm] text-center">
+          {company.logo ? (
+            <Image
+              src={company.logo}
+              alt={`${company.name} logo`}
+              width={56}
+              height={56}
+              unoptimized
+              className="mx-auto h-14 w-auto object-contain"
+            />
+          ) : null}
+          <p
+            className="mt-3 text-[20px] font-bold leading-snug tracking-wide"
+            style={{ color: tpl.ink }}
+          >
+            {company.name}
+          </p>
+          {contactLine ? (
+            <p
+              className="mx-auto mt-1 max-w-[125mm] text-[10.5px] leading-snug"
+              style={{ color: tpl.muted }}
+            >
+              {contactLine}
+            </p>
+          ) : null}
+          {company.regNo ? (
+            <p className="mt-0.5 text-[10px]" style={{ color: tpl.muted }}>
+              RC {company.regNo}
+            </p>
+          ) : null}
+          <div className="mx-auto mt-5 h-px w-full" style={{ backgroundColor: tpl.line }} />
+          <div className="mt-4 flex items-center justify-between">
+            <p className="text-[11px] tracking-[0.08em]" style={{ color: tpl.muted }}>
+              {formatLetterDate(doc.date)}
+            </p>
+            <p className="text-[11px] tracking-[0.08em]" style={{ color: tpl.muted }}>
+              Ref: {doc.number}
+            </p>
+          </div>
+        </div>
+      ) : tpl.layout === "banner" ? (
+        <div className="relative z-10" style={{ backgroundColor: tpl.bandBg }}>
+          <div className="px-[22mm] pb-6 pt-[14mm] text-center">
+            {company.logo ? (
+              <div
+                className="mx-auto flex size-16 shrink-0 items-center justify-center rounded-2xl bg-white p-2"
+                style={{ backgroundColor: tpl.white }}
+              >
+                <div className="relative h-full w-full">
+                  <Image
+                    src={company.logo}
+                    alt={`${company.name} logo`}
+                    fill
+                    sizes="48px"
+                    unoptimized
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+            ) : null}
+            <p
+              className="mt-3 text-[24px] font-bold leading-tight tracking-wide"
+              style={{ color: tpl.bandText }}
+            >
+              {company.name}
+            </p>
+            {contactLine ? (
+              <p
+                className="mx-auto mt-1.5 max-w-[140mm] text-[10.5px] leading-snug"
+                style={{ color: tpl.bandMuted }}
+              >
+                {contactLine}
+              </p>
+            ) : null}
+            {company.regNo ? (
+              <p className="mt-0.5 text-[10px]" style={{ color: tpl.bandMuted }}>
+                RC {company.regNo}
+              </p>
+            ) : null}
+            <div
+              className="mt-6 flex items-center justify-between border-t pt-3"
+              style={{ borderColor: tpl.bandMuted }}
+            >
+              <p
+                className="text-[11px] tracking-[0.08em]"
+                style={{ color: tpl.bandMuted }}
+              >
+                {formatLetterDate(doc.date)}
+              </p>
+              <p
+                className="text-[11px] tracking-[0.08em]"
+                style={{ color: tpl.bandMuted }}
+              >
+                Ref: {doc.number}
+              </p>
+            </div>
+          </div>
+          <div className="h-[4px] w-full" style={{ backgroundColor: tpl.accentStrip }} />
+          {tpl.wave ? (
+            <svg
+              aria-hidden
+              className="document-header-wave pointer-events-none absolute inset-x-0 top-full h-[40px] w-full"
+              viewBox="0 0 794 40"
+              preserveAspectRatio="none"
+            >
+              <path d={topWaves.main} fill={tpl.bandBg} />
+              <path d={topWaves.accent} fill={tpl.accentStrip} />
+            </svg>
+          ) : null}
+        </div>
+      ) : tpl.band ? (
         <div className="relative z-10" style={{ backgroundColor: tpl.bandBg }}>
           <div className="flex items-start justify-between gap-8 px-[22mm] pb-7 pt-8">
             <div className="flex items-start gap-4">
@@ -82,12 +232,16 @@ export function DocumentPage({
                   className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-white p-1.5"
                   style={{ backgroundColor: tpl.white }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={company.logo}
-                    alt={`${company.name} logo`}
-                    className="max-h-full max-w-full object-contain"
-                  />
+                  <div className="relative h-full w-full">
+                    <Image
+                      src={company.logo}
+                      alt={`${company.name} logo`}
+                      fill
+                      sizes="44px"
+                      unoptimized
+                      className="object-contain"
+                    />
+                  </div>
                 </div>
               ) : null}
               <div>
@@ -142,10 +296,12 @@ export function DocumentPage({
         <div className="flex items-start justify-between gap-8 px-[22mm] pt-[14mm]">
           <div className="flex items-start gap-4">
             {company.logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={company.logo}
                 alt={`${company.name} logo`}
+                width={48}
+                height={48}
+                unoptimized
                 className="size-12 shrink-0 object-contain"
               />
             ) : null}
@@ -182,7 +338,7 @@ export function DocumentPage({
         className="relative flex flex-1 flex-col px-[22mm]"
         style={{
           paddingBottom: tpl.wave ? (hasFooter ? "12mm" : "34mm") : "16mm",
-          paddingTop: tpl.band ? "20mm" : "10mm",
+          paddingTop: tpl.layout === "classic" ? "8mm" : tpl.layout === "banner" ? "18mm" : tpl.band ? "20mm" : "10mm",
         }}
       >
         {/* Background shapes */}
@@ -329,23 +485,32 @@ export function DocumentPage({
 
           <div className="mt-10">
             {company.signature ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={company.signature}
-                alt={`Signature of ${doc.signatoryRole || company.signatoryRole}`}
-                className="mb-[-3px] max-h-16 max-w-[200px] object-contain object-left"
-              />
+              <div className="relative mb-[-3px] h-16 max-w-[200px]">
+                <Image
+                  src={company.signature}
+                  alt={`Signature of ${company.signatoryName || doc.signatoryRole || company.signatoryRole}`}
+                  fill
+                  sizes="200px"
+                  unoptimized
+                  className="object-contain object-left-top"
+                />
+              </div>
             ) : null}
             <div className="max-w-[200px]" style={{ borderTopWidth: 2, borderTopColor: tpl.primary }} />
             <p
               className="mt-2.5 text-[12px] font-bold uppercase leading-relaxed"
               style={{ color: tpl.titleAccent ? tpl.primary : tpl.ink }}
             >
-              {doc.signatoryRole || company.signatoryRole}
+              {company.signatoryName || doc.signatoryRole || company.signatoryRole}
             </p>
             <p className="mt-0.5 text-[12px] leading-relaxed" style={{ color: tpl.muted }}>
               For: {company.name}
             </p>
+            {company.signatoryName ? (
+              <p className="mt-0.5 text-[12px] leading-relaxed" style={{ color: tpl.muted }}>
+                {doc.signatoryRole || company.signatoryRole}
+              </p>
+            ) : null}
           </div>
         </div>
       </div>
@@ -367,18 +532,24 @@ export function DocumentPage({
             }
           >
             <p
-              className="mx-auto max-w-[165mm] text-[10px] leading-relaxed"
+              className="mx-auto max-w-[165mm] text-[12px] leading-relaxed"
               style={{ color: tpl.band ? tpl.bandMuted : tpl.muted }}
             >
               {contactLine}
             </p>
-            {socialsLine ? (
-              <p
-                className="mx-auto mt-1 max-w-[165mm] text-[10px] leading-relaxed"
-                style={{ color: tpl.band ? tpl.bandMuted : tpl.faint }}
-              >
-                {socialsLine}
-              </p>
+            {socials.length ? (
+              <div className="mx-auto mt-1.5 flex max-w-[165mm] flex-wrap items-center justify-center gap-x-4 gap-y-1">
+                {socials.map((s) => (
+                  <span
+                    key={s.key}
+                    className="inline-flex items-center gap-1.5"
+                    style={{ color: tpl.band ? tpl.bandMuted : tpl.faint }}
+                  >
+                    <SocialIcon kind={s.key} size={12} color="currentColor" />
+                    <span className="text-[12px] leading-relaxed">{s.value}</span>
+                  </span>
+                ))}
+              </div>
             ) : null}
           </div>
         </div>

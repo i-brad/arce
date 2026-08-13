@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { DataProvider } from "@/lib/data/context";
-import { AppShell } from "@/components/app-shell";
+import { AuthProvider } from "@/lib/auth/auth-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,17 +19,16 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   applicationName: "Acre",
   title: {
-    default: "Acre — Real Estate Invoicing",
+    default: "Acre — Invoicing & Acknowledgment Letters",
     template: "%s · Acre",
   },
   description:
-    "Acre turns every payment you receive into a clean one-page acknowledgment letter or invoice. Built for real estate agents.",
+    "Acre turns every payment you receive into a clean one-page acknowledgment letter or invoice, ready to send to any client.",
   keywords: [
-    "real estate invoicing",
+    "invoicing",
     "payment acknowledgment letter",
-    "real estate agents",
     "invoice generator",
-    "property payment receipt",
+    "payment receipt",
     "Acre",
   ],
   authors: [{ name: "Works by Brad" }],
@@ -43,22 +41,22 @@ export const metadata: Metadata = {
     type: "website",
     url: SITE,
     siteName: "Acre",
-    title: "Acre — Real Estate Invoicing",
+    title: "Acre — Invoicing & Acknowledgment Letters",
     description:
-      "Turn every payment you receive into a clean one-page acknowledgment letter or invoice. Built for real estate agents.",
+      "Turn every payment you receive into a clean one-page acknowledgment letter or invoice, ready to send to any client.",
     locale: "en_NG",
     images: [
       {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Acre — Real Estate Invoicing",
+        alt: "Acre — Invoicing & Acknowledgment Letters",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Acre — Real Estate Invoicing",
+    title: "Acre — Invoicing & Acknowledgment Letters",
     description:
       "Turn every payment you receive into a clean one-page acknowledgment letter or invoice.",
     images: ["/og.png"],
@@ -76,9 +74,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <DataProvider>
-          <AppShell>{children}</AppShell>
-        </DataProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

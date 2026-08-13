@@ -1,7 +1,6 @@
 "use client"
 
-import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react"
-import type { ReactNode } from "react"
+import { cloneElement, isValidElement, useId, type InputHTMLAttributes, type ReactElement, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react"
 import { cn } from "@/lib/utils/cn"
 
 const baseField =
@@ -35,14 +34,26 @@ export function Field({
   className?: string
   children: ReactNode
 }) {
+  const id = useId()
+  // A Field is a group, not a single label: wrapping arbitrary children in a
+  // <label> nests other labels (e.g. file upload buttons) and makes browsers
+  // open the file dialog when clicking anywhere inside — including a signature
+  // canvas. Use a <label htmlFor> for the caption instead and link it to the
+  // control via the shared id.
+  const singleControl = isValidElement(children)
   return (
-    <label className={cn("block", className)}>
-      <span className="mb-1.5 flex items-baseline gap-1 text-[13px] font-medium text-ink">
+    <div className={cn("block", className)}>
+      <label
+        htmlFor={singleControl ? id : undefined}
+        className="mb-1.5 flex items-baseline gap-1 text-[13px] font-medium text-ink"
+      >
         {label}
         {required ? <span className="text-danger">*</span> : null}
-      </span>
-      {children}
+      </label>
+      {singleControl
+        ? cloneElement(children as ReactElement<{ id?: string }>, { id })
+        : children}
       {hint ? <span className="mt-1.5 block text-xs leading-relaxed text-muted">{hint}</span> : null}
-    </label>
+    </div>
   )
 }

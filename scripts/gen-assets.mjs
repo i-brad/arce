@@ -74,7 +74,7 @@ const og = `
     <text x="0" y="46" font-family="Fraunces" font-weight="700" font-size="108" fill="${GREEN}" text-anchor="middle">A</text>
   </g>
   <text x="600" y="440" font-family="Fraunces" font-weight="600" font-size="86" fill="#FFFFFF" text-anchor="middle" letter-spacing="4">Acre</text>
-  <text x="600" y="500" font-family="Helvetica, Arial, sans-serif" font-size="26" fill="${CREAM}" text-anchor="middle" letter-spacing="10">REAL ESTATE INVOICING</text>
+  <text x="600" y="500" font-family="Helvetica, Arial, sans-serif" font-size="26" fill="${CREAM}" text-anchor="middle" letter-spacing="10">INVOICING & ACKNOWLEDGMENTS</text>
   <text x="1132" y="600" font-family="Helvetica, Arial, sans-serif" font-size="18" fill="${MUTED}" text-anchor="end" letter-spacing="4">invoicing.worksbybrad.xyz</text>
 </svg>`
 

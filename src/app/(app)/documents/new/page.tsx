@@ -5,13 +5,18 @@ import { useRouter } from "next/navigation"
 import { useData } from "@/lib/data/context"
 import { DOC_TYPE_LABELS, type DocType } from "@/lib/data/types"
 import { newDocument, today } from "@/lib/documents/document-utils"
+import {
+  SAMPLE_CLIENT,
+  SAMPLE_DOCS,
+  sampleDocument,
+} from "@/lib/documents/sample-documents"
 import { PageHeader } from "@/components/ui/misc"
 import { Button } from "@/components/ui/button"
 import { Field, Input, Select } from "@/components/ui/fields"
 
 export default function NewDocumentPage() {
   const router = useRouter()
-  const { ready, clients, company, saveDocument } = useData()
+  const { ready, clients, company, saveDocument, saveClient } = useData()
 
   const [type, setType] = useState<DocType>("acknowledgement")
   const [clientId, setClientId] = useState("")
@@ -34,12 +39,52 @@ export default function NewDocumentPage() {
     router.push(`/documents/${doc.id}`)
   }
 
+  const loadSample = async (sampleType: DocType) => {
+    if (!company) return
+    setSaving(true)
+    let client = clients.find((c) => c.name === SAMPLE_CLIENT.name) ?? clients[0] ?? null
+    if (!client) {
+      client = SAMPLE_CLIENT
+      await saveClient(client)
+    }
+    const doc = sampleDocument(sampleType, company, client.id)
+    await saveDocument(doc)
+    router.push(`/documents/${doc.id}`)
+  }
+
   return (
-    <div className="max-w-lg">
+    <div className="max-w-2xl">
       <PageHeader
         title="New document"
-        description="Choose the type and recipient, then build the letter in the editor."
+        description="Start from a sample or build a letter from scratch in the editor."
       />
+
+      <div className="mb-6">
+        <h2 className="mb-2 text-sm font-medium text-ink">Start from a sample</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {SAMPLE_DOCS.map((sample) => (
+            <button
+              key={sample.key}
+              type="button"
+              disabled={saving}
+              onClick={() => void loadSample(sample.type)}
+              className="group rounded-[10px] border border-line bg-panel p-5 text-left transition hover:border-accent/50 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-accent">
+                {DOC_TYPE_LABELS[sample.type]}
+              </p>
+              <p className="mt-1.5 text-sm font-medium text-ink">{sample.title}</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted">{sample.description}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-4 flex items-center gap-3">
+        <div className="h-px flex-1 bg-line" />
+        <span className="text-xs text-faint">or build from scratch</span>
+        <div className="h-px flex-1 bg-line" />
+      </div>
 
       <div className="space-y-5 rounded-[10px] border border-line bg-panel p-6">
         <Field label="Type" required>
