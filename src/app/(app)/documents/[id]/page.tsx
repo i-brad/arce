@@ -5,10 +5,12 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useData } from "@/lib/data/context"
 import type { Client, Company, InvoiceDocument } from "@/lib/data/types"
+import { SettingsForm } from "@/app/(app)/settings/page"
 import { DocumentEditor } from "@/components/document/document-editor"
 import { DocumentPage } from "@/components/document/document-page"
 import { PdfDownloadButton } from "@/components/document/pdf-download-button"
 import { Button } from "@/components/ui/button"
+import { Dialog } from "@/components/ui/dialog"
 
 export default function DocumentEditorPage({ params }: PageProps<"/documents/[id]">) {
   const { id } = use(params)
@@ -57,8 +59,10 @@ function EditorInner({
   deleteDocument: (id: string) => Promise<void>
 }) {
   const router = useRouter()
+  const { saveCompany } = useData()
   const [draft, setDraft] = useState(doc)
   const [saved, setSaved] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const client = clients.find((c) => c.id === draft.clientId)
   const fileName = `${draft.number || draft.title}${client ? ` - ${client.name}` : ""}.pdf`
@@ -88,6 +92,9 @@ function EditorInner({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="secondary" onClick={() => setSettingsOpen(true)}>
+            Settings
+          </Button>
           <Button variant="secondary" onClick={() => window.print()}>
             Print
           </Button>
@@ -105,15 +112,22 @@ function EditorInner({
         </div>
       </div>
 
+      <Dialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        title="Settings"
+        description="Your company details appear on every document you send."
+      >
+        <SettingsForm company={company} saveCompany={saveCompany} />
+      </Dialog>
+
       <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,440px)_minmax(0,1fr)]">
         <div className="print-hide min-w-0">
           <DocumentEditor doc={draft} clients={clients} onChange={setDraft} />
         </div>
 
         <div className="print-hide print-reset sticky top-8 self-start overflow-x-auto">
-          <div className="origin-top-left scale-[0.78]">
-            <DocumentPage doc={draft} company={company} client={client} />
-          </div>
+          <DocumentPage doc={draft} company={company} client={client} />
         </div>
       </div>
 

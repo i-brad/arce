@@ -73,3 +73,40 @@ export const SOCIAL_ICONS: Record<SocialKey, IconDef> = {
 }
 
 export const SOCIAL_STROKE_WIDTH = STROKE
+
+export type ContactIconKey = "phone" | "mail" | "pin"
+
+export const CONTACT_ICONS: Record<ContactIconKey, IconDef> = {
+  phone: {
+    viewBox: "0 0 24 24",
+    shapes: [
+      {
+        t: "path",
+        d: "M6.6 3.6c.7-.3 1.5 0 1.8.7l1 2.3c.3.6.1 1.3-.4 1.7L7.8 9.6c1 2.4 2.9 4.3 5.3 5.3l1.3-1.2c.4-.5 1.1-.7 1.7-.4l2.3 1c.7.3 1 1.1.7 1.8l-.9 2c-.3.6-.9 1-1.6.9-6-.7-10.8-5.5-11.5-11.5-.1-.7.3-1.3.9-1.6l2-.9Z",
+        mode: "stroke",
+      },
+    ],
+  },
+  mail: {
+    viewBox: "0 0 24 24",
+    shapes: [
+      {
+        t: "path",
+        d: "M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z",
+        mode: "stroke",
+      },
+      { t: "path", d: "M3.5 7 12 13 20.5 7", mode: "stroke" },
+    ],
+  },
+  pin: {
+    viewBox: "0 0 24 24",
+    shapes: [
+      {
+        t: "path",
+        d: "M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z",
+        mode: "stroke",
+      },
+      { t: "circle", cx: 12, cy: 9, r: 2.4, mode: "stroke" },
+    ],
+  },
+}

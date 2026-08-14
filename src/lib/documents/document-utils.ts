@@ -165,6 +165,7 @@ export function newDocument(type: DocType, company: Company): InvoiceDocument {
     template: company.defaultTemplate,
     font: "carlito",
     showPattern: false,
+    showCompanyDetails: false,
     status: "draft",
     createdAt: now,
     updatedAt: now,

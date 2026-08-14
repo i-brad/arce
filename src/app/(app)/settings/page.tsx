@@ -36,10 +36,18 @@ export default function SettingsPage() {
     return <p className="text-sm text-muted">Loading…</p>;
   }
 
-  return <SettingsForm company={company} saveCompany={saveCompany} />;
+  return (
+    <div className="max-w-xl">
+      <PageHeader
+        title="Settings"
+        description="Your company details appear on every document you send."
+      />
+      <SettingsForm company={company} saveCompany={saveCompany} />
+    </div>
+  );
 }
 
-function SettingsForm({
+export function SettingsForm({
   company,
   saveCompany,
 }: {
@@ -71,18 +79,23 @@ function SettingsForm({
   };
 
   return (
-    <div className="max-w-xl">
-      <PageHeader
-        title="Settings"
-        description="Your company details appear on every document you send."
-      />
-
-      <div className="space-y-5 rounded-[10px] border border-line bg-panel p-6">
-        <Field label="Company name" required>
+    <div className="space-y-5 rounded-[10px] border border-line bg-panel p-6">
+      <Field label="Company name" required>
           <Input
             value={form.name}
             onChange={(e) => set({ name: e.target.value })}
             placeholder="Casa khanya Homes"
+          />
+        </Field>
+
+        <Field
+          label="Tagline"
+          hint="A short motto shown under your logo. Used by the Diagonal wedge template."
+        >
+          <Input
+            value={form.tagline}
+            onChange={(e) => set({ tagline: e.target.value })}
+            placeholder="…a better real estate experience"
           />
         </Field>
 
@@ -425,12 +438,11 @@ function SettingsForm({
             </div>
           ) : null}
         </Field>
-        <div className="flex items-center justify-end gap-3 pt-2">
-          {error ? <p className="text-[13px] text-danger">{error}</p> : null}
-          <Button onClick={() => void save()} disabled={saving}>
-            {saving ? "Saving…" : saved ? "Saved" : "Save settings"}
-          </Button>
-        </div>
+      <div className="flex items-center justify-end gap-3 pt-2">
+        {error ? <p className="text-[13px] text-danger">{error}</p> : null}
+        <Button onClick={() => void save()} disabled={saving}>
+          {saving ? "Saving…" : saved ? "Saved" : "Save settings"}
+        </Button>
       </div>
     </div>
   );

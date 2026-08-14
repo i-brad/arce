@@ -19,7 +19,6 @@ export default function NewDocumentPage() {
 
   const [type, setType] = useState<DocType>("acknowledgement")
   const [clientId, setClientId] = useState("")
-  const [number, setNumber] = useState("")
   const [date, setDate] = useState(today())
   const [saving, setSaving] = useState(false)
 
@@ -31,7 +30,6 @@ export default function NewDocumentPage() {
     if (!company) return
     const doc = newDocument(type, company)
     doc.clientId = clientId
-    doc.number = number.trim()
     doc.date = date
     setSaving(true)
     await saveDocument(doc)
@@ -102,18 +100,9 @@ export default function NewDocumentPage() {
           </Select>
         </Field>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Reference number">
-            <Input
-              value={number}
-              onChange={(e) => setNumber(e.target.value)}
-              placeholder={`${type === "invoice" ? "INV" : "ACK"}-2026-001`}
-            />
-          </Field>
-          <Field label="Date">
-            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          </Field>
-        </div>
+        <Field label="Date">
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        </Field>
 
         <div className="flex justify-end pt-2">
           <Button onClick={create} disabled={saving || !clientId}>

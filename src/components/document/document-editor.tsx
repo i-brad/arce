@@ -43,7 +43,7 @@ function removeSection(doc: InvoiceDocument, sectionId: string): InvoiceDocument
   return { ...doc, sections: doc.sections.filter((s) => s.id !== sectionId) }
 }
 
-const layoutOrder: LayoutId[] = ["band", "classic", "banner"]
+const layoutOrder: LayoutId[] = ["band", "classic", "banner", "wedge"]
 
 const templateGroups = layoutOrder
   .map((layout) => ({
@@ -78,13 +78,6 @@ export function DocumentEditor({ doc, clients, onChange }: DocumentEditorProps) 
                 </option>
               ))}
             </Select>
-          </Field>
-          <Field label="Reference number">
-            <Input
-              value={doc.number}
-              onChange={(e) => set({ number: e.target.value })}
-              placeholder="ACK-2026-001"
-            />
           </Field>
           <Field label="Date">
             <Input
@@ -322,6 +315,15 @@ export function DocumentEditor({ doc, clients, onChange }: DocumentEditorProps) 
               className="size-4 accent-accent"
             />
             Show background pattern
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={doc.showCompanyDetails}
+              onChange={(e) => set({ showCompanyDetails: e.target.checked })}
+              className="size-4 accent-accent"
+            />
+            Show company name & contact details in header
           </label>
         </div>
       </section>

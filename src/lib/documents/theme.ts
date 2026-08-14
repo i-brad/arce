@@ -1,11 +1,20 @@
-export type TemplateId = "estate" | "minimal" | "navy" | "terracotta" | "classic" | "banner" | "banner-navy"
+export type TemplateId =
+  | "estate"
+  | "minimal"
+  | "navy"
+  | "terracotta"
+  | "classic"
+  | "banner"
+  | "banner-navy"
+  | "wedge"
 
-export type LayoutId = "band" | "classic" | "banner"
+export type LayoutId = "band" | "classic" | "banner" | "wedge"
 
 export const layoutLabels: Record<LayoutId, string> = {
   band: "Band",
   classic: "Classic letterhead",
   banner: "Banner",
+  wedge: "Diagonal wedge",
 }
 
 export interface DocTemplate {
@@ -218,6 +227,32 @@ export const templates: Record<TemplateId, DocTemplate> = {
     line: "#E1E6ED",
     white: "#FFFFFF",
   },
+  wedge: {
+    id: "wedge",
+    label: "Emerald wedge",
+    description: "White letterhead with a diagonal green banner, bulleted breakdown and an icon footer.",
+    layout: "wedge",
+    band: false,
+    wave: false,
+    shapes: false,
+    pattern: true,
+    totalChip: false,
+    titleAccent: true,
+    bandBg: "#242723",
+    bandText: "#FFFFFF",
+    bandMuted: "#C7CCC8",
+    accentStrip: "#357D57",
+    primary: "#1D3B2D",
+    primarySoft: "#E7ECE8",
+    primarySoftText: "#1D3B2D",
+    shape: "#EEF1EE",
+    shapeAlt: "#E2E7E3",
+    ink: "#1E241F",
+    muted: "#5A655D",
+    faint: "#8A958C",
+    line: "#DCE2DD",
+    white: "#FFFFFF",
+  },
 }
 
 export const templateList = Object.values(templates)
@@ -225,6 +260,17 @@ export const templateList = Object.values(templates)
 export function getTemplate(id: string): DocTemplate {
   return templates[id as TemplateId] ?? templates.estate
 }
+
+/**
+ * Diagonal banner shape used by the wedge layout, anchored to the right edge.
+ * Shared by the header and footer so both diagonals lean at the same angle.
+ */
+export function wedgeDiagonal(width: number, height: number): string {
+  const topX = width * 0.3
+  const bottomX = width * 0.52
+  return `M ${topX} 0 L ${width} 0 L ${width} ${height} L ${bottomX} ${height} Z`
+}
+
 
 export function footerWaves(width: number, height: number): { main: string; accent: string } {
   const humps = 3

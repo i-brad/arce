@@ -13,25 +13,30 @@ import {
   flowerPath,
 } from "@/lib/documents/patterns";
 import {
+  CONTACT_ICONS,
   SOCIAL_ICONS,
   SOCIAL_STROKE_WIDTH,
-  type SocialKey,
+  type IconDef,
 } from "@/lib/documents/social-icons";
-import { footerWaves, getTemplate, headerWaves } from "@/lib/documents/theme";
+import {
+  footerWaves,
+  getTemplate,
+  headerWaves,
+  wedgeDiagonal,
+} from "@/lib/documents/theme";
 import { formatNaira } from "@/lib/utils/currency";
 import Image from "next/image";
 import { useId } from "react";
 
 function SocialIcon({
-  kind,
+  icon,
   size,
   color,
 }: {
-  kind: SocialKey;
+  icon: IconDef;
   size: number;
   color: string;
 }) {
-  const icon = SOCIAL_ICONS[kind];
   return (
     <svg
       viewBox={icon.viewBox}
@@ -139,6 +144,7 @@ export function DocumentPage({
   const topWaves = headerWaves(794, 40);
   const contactLine = companyContactLine(company);
   const socials = companySocials(company);
+  const wedgeSocials = socials.filter((s) => s.key !== "website");
   const hasFooter = Boolean(contactLine || socials.length);
   const pt = 4 / 3;
   const tile = FLOWER_SPACING * pt;
@@ -171,7 +177,7 @@ export function DocumentPage({
         ) : tpl.pattern ? (
           <svg
             aria-hidden
-            className="pointer-events-none absolute inset-0 z-[1] h-full w-full"
+            className="pointer-events-none absolute inset-0 z-1 h-full w-full"
           >
             <defs>
               <pattern
@@ -230,20 +236,12 @@ export function DocumentPage({
             className="mx-auto mt-3 h-px w-full"
             style={{ backgroundColor: tpl.line }}
           />
-          <div className="mt-3 flex items-center justify-between">
-            <p
-              className="text-[11px] tracking-[0.08em]"
-              style={{ color: tpl.muted }}
-            >
-              {formatLetterDate(doc.date)}
-            </p>
-            <p
-              className="text-[11px] tracking-[0.08em]"
-              style={{ color: tpl.muted }}
-            >
-              Ref: {doc.number}
-            </p>
-          </div>
+          <p
+            className="mt-3 text-center text-[11px] tracking-[0.08em]"
+            style={{ color: tpl.muted }}
+          >
+            {formatLetterDate(doc.date)}
+          </p>
         </div>
       ) : tpl.layout === "banner" ? (
         <div className="relative z-10" style={{ backgroundColor: tpl.bandBg }}>
@@ -287,23 +285,12 @@ export function DocumentPage({
                 RC {company.regNo}
               </p>
             ) : null}
-            <div
-              className="mt-2 flex items-center justify-between border-t pt-1.5"
-              style={{ borderColor: tpl.bandMuted }}
+            <p
+              className="mt-2 border-t pt-1.5 text-[11px] tracking-[0.08em]"
+              style={{ borderColor: tpl.bandMuted, color: tpl.bandMuted }}
             >
-              <p
-                className="text-[11px] tracking-[0.08em]"
-                style={{ color: tpl.bandMuted }}
-              >
-                {formatLetterDate(doc.date)}
-              </p>
-              <p
-                className="text-[11px] tracking-[0.08em]"
-                style={{ color: tpl.bandMuted }}
-              >
-                Ref: {doc.number}
-              </p>
-            </div>
+              {formatLetterDate(doc.date)}
+            </p>
           </div>
           <div
             className="h-[4px] w-full"
@@ -372,12 +359,6 @@ export function DocumentPage({
               >
                 {formatLetterDate(doc.date)}
               </p>
-              <p
-                className="mt-0.5 whitespace-nowrap text-[10.5px]"
-                style={{ color: tpl.bandMuted }}
-              >
-                Ref: {doc.number}
-              </p>
             </div>
           </div>
           <div
@@ -395,6 +376,69 @@ export function DocumentPage({
               <path d={topWaves.accent} fill={tpl.accentStrip} />
             </svg>
           ) : null}
+        </div>
+      ) : tpl.layout === "wedge" ? (
+        <div className="relative px-[22mm] pt-[9mm]">
+          <svg
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-[28mm] w-full"
+            viewBox="0 0 794 106"
+            preserveAspectRatio="none"
+          >
+            <path d={wedgeDiagonal(794, 106)} fill={tpl.accentStrip} />
+          </svg>
+          <div className="relative z-10 flex flex-col items-start">
+            {company.logo ? (
+              <Image
+                src={company.logo}
+                alt={`${company.name} logo`}
+                width={64}
+                height={64}
+                unoptimized
+                className="h-14 w-auto shrink-0 object-contain"
+              />
+            ) : null}
+            {company.tagline ? (
+              <p
+                className="ml-14 max-w-[85mm] text-[9.5px] italic leading-snug"
+                style={{ color: tpl.muted }}
+              >
+                {company.tagline}
+              </p>
+            ) : null}
+            {doc.showCompanyDetails ? (
+              <>
+                <p
+                  className="mt-1.5 text-[16px] font-bold leading-snug tracking-wide"
+                  style={{ color: tpl.ink }}
+                >
+                  {company.name}
+                </p>
+                {contactLine ? (
+                  <p
+                    className="mt-0.5 max-w-[85mm] text-[10px] leading-snug"
+                    style={{ color: tpl.muted }}
+                  >
+                    {contactLine}
+                  </p>
+                ) : null}
+                {company.regNo ? (
+                  <p
+                    className="mt-0.5 text-[9.5px] leading-snug"
+                    style={{ color: tpl.muted }}
+                  >
+                    RC {company.regNo}
+                  </p>
+                ) : null}
+              </>
+            ) : null}
+          </div>
+          <p
+            className="relative z-10 mt-3 text-right text-[12px] font-bold tracking-[0.08em]"
+            style={{ color: tpl.ink }}
+          >
+            {formatLetterDate(doc.date)}
+          </p>
         </div>
       ) : (
         <div className="flex items-start justify-between gap-8 px-[22mm] pt-[12mm]">
@@ -439,12 +483,6 @@ export function DocumentPage({
             >
               {formatLetterDate(doc.date)}
             </p>
-            <p
-              className="mt-0.5 whitespace-nowrap text-[10.5px]"
-              style={{ color: tpl.muted }}
-            >
-              Ref: {doc.number}
-            </p>
           </div>
         </div>
       )}
@@ -459,9 +497,11 @@ export function DocumentPage({
               ? "7mm"
               : tpl.layout === "banner"
                 ? "13mm"
-                : tpl.band
-                  ? "14mm"
-                  : "9mm",
+                : tpl.layout === "wedge"
+                  ? "5mm"
+                  : tpl.band
+                    ? "14mm"
+                    : "9mm",
         }}
       >
         {/* Background shapes */}
@@ -518,40 +558,70 @@ export function DocumentPage({
             {doc.salutation}
           </p>
 
-          <div className="mt-4 text-center">
-            <h1
-              className="text-[17px] font-bold uppercase tracking-[0.12em]"
-              style={{ color: tpl.titleAccent ? tpl.primary : tpl.ink }}
-            >
-              {doc.title}
-            </h1>
-            {tpl.titleAccent ? (
-              <div
-                className="mx-auto mt-2 h-0.75 w-16"
-                style={{ backgroundColor: tpl.primary }}
-              />
-            ) : null}
+          <div
+            className={
+              tpl.layout === "wedge" ? "mt-3 text-center" : "mt-4 text-center"
+            }
+          >
+            {tpl.layout === "wedge" ? (
+              <h1
+                className="inline-block text-[16px] font-bold uppercase tracking-[0.1em] underline decoration-2 underline-offset-[6px]"
+                style={{ color: tpl.ink }}
+              >
+                {doc.title}
+              </h1>
+            ) : (
+              <>
+                <h1
+                  className="text-[17px] font-bold uppercase tracking-[0.12em]"
+                  style={{ color: tpl.titleAccent ? tpl.primary : tpl.ink }}
+                >
+                  {doc.title}
+                </h1>
+                {tpl.titleAccent ? (
+                  <div
+                    className="mx-auto mt-2 h-0.75 w-16"
+                    style={{ backgroundColor: tpl.primary }}
+                  />
+                ) : null}
+              </>
+            )}
           </div>
 
           <p
-            className="mt-4 text-[12px] leading-[1.85] text-justify"
+            className={
+              tpl.layout === "wedge"
+                ? "mt-3 text-[12px] leading-normal text-justify"
+                : "mt-4 text-[12px] leading-[1.85] text-justify"
+            }
             style={{ color: tpl.ink }}
           >
             {body}
           </p>
 
           <p
-            className="mt-4 text-[12px] leading-relaxed"
+            className={
+              tpl.layout === "wedge"
+                ? "mt-3 text-[12px] leading-snug"
+                : "mt-4 text-[12px] leading-relaxed"
+            }
             style={{ color: tpl.ink }}
           >
             {doc.breakdownHeading}
           </p>
 
-          <div className="mt-3">
+          <div className={tpl.layout === "wedge" ? "mt-1.5" : "mt-3"}>
             {doc.sections.map((section) => (
               <div key={section.id}>
                 {section.label ? (
-                  tpl.titleAccent ? (
+                  tpl.layout === "wedge" ? (
+                    <p
+                      className="mt-2 text-[12px] font-bold uppercase tracking-wide underline underline-offset-4"
+                      style={{ color: tpl.ink }}
+                    >
+                      {section.label}
+                    </p>
+                  ) : tpl.titleAccent ? (
                     <p
                       className="mt-3 border-l-[3px] pl-2.5 text-[12px] font-bold uppercase tracking-wide"
                       style={{ borderColor: tpl.primary, color: tpl.primary }}
@@ -567,30 +637,75 @@ export function DocumentPage({
                     </p>
                   )
                 ) : null}
-                {section.items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-baseline justify-between gap-6 border-b py-1"
-                    style={{ borderColor: tpl.line }}
-                  >
-                    <span
-                      className="flex-1 text-[12px] leading-relaxed"
-                      style={{ color: tpl.ink }}
+                {section.items.map((item) =>
+                  tpl.layout === "wedge" ? (
+                    <div
+                      key={item.id}
+                      className="flex items-baseline justify-between gap-6 py-0.5"
                     >
-                      {item.description}
-                    </span>
-                    <span
-                      className="min-w-24 text-right text-[12px] font-semibold tabular-nums"
-                      style={{ color: tpl.primary }}
+                      <span
+                        className="flex flex-1 items-baseline gap-2 text-[12px] leading-snug"
+                        style={{ color: tpl.ink }}
+                      >
+                        <span
+                          aria-hidden
+                          className="inline-block size-[6px] shrink-0 rotate-45"
+                          style={{ backgroundColor: tpl.primary }}
+                        />
+                        {item.description}
+                      </span>
+                      <span
+                        className="min-w-24 text-right text-[12px] font-bold tabular-nums"
+                        style={{ color: tpl.ink }}
+                      >
+                        {formatNaira(item.amount)}
+                      </span>
+                    </div>
+                  ) : (
+                    <div
+                      key={item.id}
+                      className="flex items-baseline justify-between gap-6 border-b py-1"
+                      style={{ borderColor: tpl.line }}
                     >
-                      {formatNaira(item.amount)}
-                    </span>
-                  </div>
-                ))}
+                      <span
+                        className="flex-1 text-[12px] leading-relaxed"
+                        style={{ color: tpl.ink }}
+                      >
+                        {item.description}
+                      </span>
+                      <span
+                        className="min-w-24 text-right text-[12px] font-semibold tabular-nums"
+                        style={{ color: tpl.primary }}
+                      >
+                        {formatNaira(item.amount)}
+                      </span>
+                    </div>
+                  ),
+                )}
               </div>
             ))}
             {doc.showTotal ? (
-              tpl.totalChip ? (
+              tpl.layout === "wedge" ? (
+                <div className="mt-1.5 flex items-baseline justify-between gap-6 py-0.5">
+                  <span
+                    className="flex items-baseline gap-2 text-[12px] font-bold uppercase tracking-wide"
+                    style={{ color: tpl.ink }}
+                  >
+                    <span
+                      aria-hidden
+                      className="inline-block size-[6px] shrink-0 rotate-45"
+                      style={{ backgroundColor: tpl.primary }}
+                    />
+                    Total
+                  </span>
+                  <span
+                    className="min-w-24 text-right text-[13px] font-bold tabular-nums underline underline-offset-4"
+                    style={{ color: tpl.ink }}
+                  >
+                    {formatNaira(total)}
+                  </span>
+                </div>
+              ) : tpl.totalChip ? (
                 <div
                   className="mt-2 flex items-center justify-between gap-6 rounded-[6px] px-3 py-2.5"
                   style={{ backgroundColor: tpl.primarySoft }}
@@ -631,15 +746,23 @@ export function DocumentPage({
           </div>
         </div>
 
-        <div className="relative mt-auto pt-4">
+        <div className="relative pt-6">
           <p
-            className="text-[12px] leading-[1.85] text-justify"
+            className={
+              tpl.layout === "wedge"
+                ? "text-[12px] leading-normal text-justify"
+                : "text-[12px] leading-[1.85] text-justify"
+            }
             style={{ color: tpl.ink }}
           >
             {closing}
           </p>
           <p
-            className="mt-2 text-[12px] leading-[1.85] text-justify"
+            className={
+              tpl.layout === "wedge"
+                ? "mt-2 text-[12px] leading-normal text-justify"
+                : "mt-2 text-[12px] leading-[1.85] text-justify"
+            }
             style={{ color: tpl.ink }}
           >
             {thanks}
@@ -659,7 +782,7 @@ export function DocumentPage({
               </div>
             ) : null}
             <div
-              className="max-w-[200px] mt-1"
+              className="max-w-50 mt-1.5"
               style={{ borderTopWidth: 2, borderTopColor: tpl.primary }}
             />
             <p
@@ -670,12 +793,7 @@ export function DocumentPage({
                 doc.signatoryRole ||
                 company.signatoryRole}
             </p>
-            <p
-              className="mt-0.5 text-[12px] leading-relaxed"
-              style={{ color: tpl.muted }}
-            >
-              For: {company.name}
-            </p>
+
             {company.signatoryName ? (
               <p
                 className="mt-0.5 text-[12px] leading-relaxed"
@@ -684,56 +802,179 @@ export function DocumentPage({
                 {doc.signatoryRole || company.signatoryRole}
               </p>
             ) : null}
+            <p
+              className="text-[11px] leading-relaxed"
+              style={{ color: tpl.muted }}
+            >
+              For: {company.name}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Footer: contact details + socials */}
       {hasFooter ? (
-        <div
-          className="relative z-2"
-          style={tpl.band ? { backgroundColor: tpl.bandBg } : undefined}
-        >
+        tpl.layout === "wedge" ? (
           <div
-            className="px-[22mm] text-center"
-            style={
-              tpl.band
-                ? {
-                    paddingTop: "4mm",
-                    paddingBottom: tpl.wave ? "14mm" : "8mm",
-                  }
-                : {
-                    borderTopWidth: 1,
-                    borderTopColor: tpl.line,
-                    paddingTop: "3mm",
-                    paddingBottom: "8mm",
-                  }
-            }
+            className="relative z-2 overflow-hidden"
+            style={{ backgroundColor: tpl.bandBg }}
           >
-            <p
-              className="mx-auto max-w-[165mm] text-[12px] leading-relaxed"
-              style={{ color: tpl.band ? tpl.bandMuted : tpl.muted }}
+            <svg
+              aria-hidden
+              className="pointer-events-none absolute inset-0 h-full w-full"
+              viewBox="0 0 794 100"
+              preserveAspectRatio="none"
             >
-              {contactLine}
-            </p>
-            {socials.length ? (
-              <div className="mx-auto mt-1.5 flex max-w-[165mm] flex-wrap items-center justify-center gap-x-4 gap-y-1">
-                {socials.map((s) => (
-                  <span
-                    key={s.key}
-                    className="inline-flex items-center gap-1.5"
-                    style={{ color: tpl.band ? tpl.bandMuted : tpl.faint }}
-                  >
-                    <SocialIcon kind={s.key} size={12} color="currentColor" />
-                    <span className="text-[12px] leading-relaxed">
-                      {s.value}
+              <path d={wedgeDiagonal(794, 100)} fill={tpl.accentStrip} />
+            </svg>
+            <div
+              className="relative flex items-center justify-between gap-6 px-[22mm]"
+              style={{ paddingTop: "6mm", paddingBottom: "6mm" }}
+            >
+              <div className="space-y-1.5">
+                {company.phone ? (
+                  <div className="flex items-center gap-2">
+                    <SocialIcon
+                      icon={CONTACT_ICONS.phone}
+                      size={11}
+                      color={tpl.bandText}
+                    />
+                    <span
+                      className="text-[11px] leading-snug"
+                      style={{ color: tpl.bandText }}
+                    >
+                      {company.phone}
                     </span>
-                  </span>
-                ))}
+                  </div>
+                ) : null}
+                {company.email ? (
+                  <div className="flex items-center gap-2">
+                    <SocialIcon
+                      icon={CONTACT_ICONS.mail}
+                      size={11}
+                      color={tpl.bandText}
+                    />
+                    <span
+                      className="text-[11px] leading-snug"
+                      style={{ color: tpl.bandText }}
+                    >
+                      {company.email}
+                    </span>
+                  </div>
+                ) : null}
+                {company.website ? (
+                  <div className="flex items-center gap-2">
+                    <SocialIcon
+                      icon={SOCIAL_ICONS.website}
+                      size={11}
+                      color={tpl.bandText}
+                    />
+                    <span
+                      className="text-[11px] leading-snug"
+                      style={{ color: tpl.bandText }}
+                    >
+                      {company.website}
+                    </span>
+                  </div>
+                ) : null}
+                {company.address ? (
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5">
+                      <SocialIcon
+                        icon={CONTACT_ICONS.pin}
+                        size={11}
+                        color={tpl.bandText}
+                      />
+                    </span>
+                    <span
+                      className="max-w-[80mm] text-[11px] leading-snug"
+                      style={{ color: tpl.bandText }}
+                    >
+                      {company.address}
+                    </span>
+                  </div>
+                ) : null}
               </div>
-            ) : null}
+              <div className="flex flex-col items-end gap-1.5">
+                <p
+                  className="text-right text-[15px] font-bold uppercase leading-snug tracking-[0.08em]"
+                  style={{ color: tpl.bandText }}
+                >
+                  {company.name}
+                </p>
+                {wedgeSocials.length ? (
+                  <div className="flex flex-col items-end gap-1">
+                    {wedgeSocials.map((s) => (
+                      <span
+                        key={s.key}
+                        className="inline-flex items-center gap-1.5"
+                        style={{ color: tpl.bandText }}
+                      >
+                        <SocialIcon
+                          icon={SOCIAL_ICONS[s.key]}
+                          size={11}
+                          color={tpl.bandText}
+                        />
+                        <span className="text-[10.5px] leading-snug">
+                          {s.value}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div
+            className="relative z-2"
+            style={tpl.band ? { backgroundColor: tpl.bandBg } : undefined}
+          >
+            <div
+              className="px-[22mm] text-center"
+              style={
+                tpl.band
+                  ? {
+                      paddingTop: "4mm",
+                      paddingBottom: tpl.wave ? "14mm" : "8mm",
+                    }
+                  : {
+                      borderTopWidth: 1,
+                      borderTopColor: tpl.line,
+                      paddingTop: "3mm",
+                      paddingBottom: "8mm",
+                    }
+              }
+            >
+              <p
+                className="mx-auto max-w-[165mm] text-[12px] leading-relaxed"
+                style={{ color: tpl.band ? tpl.bandMuted : tpl.muted }}
+              >
+                {contactLine}
+              </p>
+              {socials.length ? (
+                <div className="mx-auto mt-1.5 flex max-w-[165mm] flex-wrap items-center justify-center gap-x-4 gap-y-1">
+                  {socials.map((s) => (
+                    <span
+                      key={s.key}
+                      className="inline-flex items-center gap-1.5"
+                      style={{ color: tpl.band ? tpl.bandMuted : tpl.faint }}
+                    >
+                      <SocialIcon
+                        icon={SOCIAL_ICONS[s.key]}
+                        size={12}
+                        color="currentColor"
+                      />
+                      <span className="text-[12px] leading-relaxed">
+                        {s.value}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        )
       ) : null}
 
       {/* Footer wave */}

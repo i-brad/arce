@@ -9,6 +9,7 @@ export type DocFont = "carlito" | "fraunces";
 export interface Company {
   id: string;
   name: string;
+  tagline: string;
   address: string;
   phone: string;
   email: string;
@@ -67,6 +68,7 @@ export interface InvoiceDocument {
   template: TemplateId;
   font: DocFont;
   showPattern: boolean;
+  showCompanyDetails: boolean;
   status: DocStatus;
   createdAt: string;
   updatedAt: string;
