@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useMemo, type ReactNode } from "react"
 import {
   Circle,
   Document,
@@ -48,6 +48,34 @@ Font.register({
 
 function docFontFamily(font?: string) {
   return font === "fraunces" ? "Fraunces" : "Carlito"
+}
+
+function TiledPattern({ src, tile, opacity }: { src: string; tile: number; opacity: number }) {
+  const cols = Math.ceil(PAGE_W / tile)
+  const rows = Math.ceil(PAGE_H / tile)
+  const cells: ReactNode[] = []
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      cells.push(
+        // eslint-disable-next-line jsx-a11y/alt-text
+        <Image
+          key={`${r}-${c}`}
+          src={src}
+          style={{
+            position: "absolute",
+            top: r * tile,
+            left: c * tile,
+            width: tile,
+            height: tile,
+            objectFit: "cover",
+            opacity,
+            zIndex: 1,
+          }}
+        />,
+      )
+    }
+  }
+  return <>{cells}</>
 }
 
 function buildStyles(tpl: DocTemplate, font?: string) {
@@ -113,48 +141,48 @@ function buildStyles(tpl: DocTemplate, font?: string) {
     classicHeader: {
       alignItems: "center",
       paddingHorizontal: 74,
-      paddingTop: 44,
+      paddingTop: 30,
     },
-    classicLogo: { width: 48, height: 48, marginBottom: 10, objectFit: "contain" },
+    classicLogo: { width: 48, height: 48, marginBottom: 6, objectFit: "contain" },
     classicName: { fontSize: 17, fontWeight: 700, letterSpacing: 0.5, color: tpl.ink, textAlign: "center" },
     classicMeta: { fontSize: 8.5, color: tpl.muted, marginTop: 3, lineHeight: 1.5, textAlign: "center" },
     classicRule: {
       borderBottomWidth: 0.6,
       borderBottomColor: tpl.line,
-      marginTop: 14,
+      marginTop: 10,
       alignSelf: "stretch",
     },
-    classicMetaRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 12, alignSelf: "stretch" },
+    classicMetaRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 8, alignSelf: "stretch" },
     classicDate: { fontSize: 9, letterSpacing: 0.8, color: tpl.muted },
     classicRef: { fontSize: 9, letterSpacing: 0.8, color: tpl.muted },
     bannerHeader: {
       backgroundColor: tpl.bandBg,
       alignItems: "center",
       paddingHorizontal: 62,
-      paddingTop: 40,
-      paddingBottom: 22,
+      paddingTop: 16,
+      paddingBottom: 9,
     },
     bannerLogoChip: {
-      width: 56,
-      height: 56,
-      borderRadius: 16,
+      width: 44,
+      height: 44,
+      borderRadius: 12,
       backgroundColor: tpl.white,
-      padding: 7,
-      marginBottom: 12,
+      padding: 5,
+      marginBottom: 5,
       justifyContent: "center",
       alignItems: "center",
     },
-    bannerLogo: { maxWidth: 42, maxHeight: 42, objectFit: "contain" },
-    bannerName: { fontSize: 20, fontWeight: 700, letterSpacing: 0.6, color: tpl.bandText, textAlign: "center" },
-    bannerMeta: { fontSize: 9, color: tpl.bandMuted, marginTop: 4, lineHeight: 1.5, textAlign: "center" },
+    bannerLogo: { maxWidth: 34, maxHeight: 34, objectFit: "contain" },
+    bannerName: { fontSize: 15, fontWeight: 700, letterSpacing: 0.6, color: tpl.bandText, textAlign: "center" },
+    bannerMeta: { fontSize: 8.5, color: tpl.bandMuted, marginTop: 2, lineHeight: 1.45, textAlign: "center" },
     bannerMetaRow: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      marginTop: 16,
+      marginTop: 7,
       borderTopWidth: 0.6,
       borderTopColor: tpl.bandMuted,
-      paddingTop: 8,
+      paddingTop: 3,
       alignSelf: "stretch",
     },
     bannerDate: { fontSize: 9, letterSpacing: 0.8, color: tpl.bandMuted },
@@ -393,20 +421,7 @@ export function LetterPdf({
         <View style={s.pageInner}>
           {doc.showPattern ? (
             company.patternImage ? (
-              // eslint-disable-next-line jsx-a11y/alt-text
-              <Image
-                src={company.patternImage}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: PAGE_W,
-                  height: PAGE_H,
-                  objectFit: "cover",
-                  opacity: 0.4,
-                  zIndex: 1,
-                }}
-              />
+              <TiledPattern src={company.patternImage} tile={110} opacity={0.4} />
             ) : tpl.pattern ? (
               <View
                 style={{
@@ -531,6 +546,7 @@ export function LetterPdf({
               s.body,
               ...(tpl.wave && !hasFooter ? [{ paddingBottom: 118 }] : []),
               ...(!tpl.band ? [{ paddingTop: tpl.layout === "classic" ? 20 : 34 }] : []),
+              ...(tpl.layout === "banner" ? [{ paddingTop: 22 }] : []),
             ]}
           >
             <View style={s.content}>

@@ -40,7 +40,7 @@ async function check(url, expectedTexts, label) {
 
 const hasPatternLayer = async () =>
   (await page.locator(".document-page pattern").count()) > 0 ||
-  (await page.locator('.document-page img[aria-hidden="true"]').count()) > 0
+  (await page.locator(".document-page .tiled-pattern").count()) > 0
 
 // A fresh user starts with an empty dashboard and lists (no sample data is seeded)
 await check("/", [
@@ -253,12 +253,12 @@ const missDoc = expectedDoc.filter((t) => !docBody.includes(t))
 if (missDoc.length) failures++
 console.log("[logo+socials on doc] " + (missDoc.length ? "MISSING: " + missDoc.join(" | ") : "OK"))
 
-// Footer must render contact details + socials
+// Footer must render contact details + socials (icons + values, no labels)
 const expectedFooter = [
   "WhatsApp: +234 708 709 6105",
-  "Website: casakhanya.estate",
-  "Instagram: @casakhanya",
-  "Facebook: Casa Khanya",
+  "casakhanya.estate",
+  "@casakhanya",
+  "Casa Khanya",
 ]
 const missFooter = expectedFooter.filter((t) => !docBody.includes(t))
 if (missFooter.length) failures++

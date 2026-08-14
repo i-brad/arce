@@ -3,8 +3,9 @@
 Invoicing and payment acknowledgment letters for service businesses.
 
 Acre is a local-first web app for drafting, previewing, and exporting the
-formal acknowledgment letters and invoices you send to clients.
-Everything is stored in your browser — no account, no server.
+formal acknowledgment letters and invoices you send to clients. Everything is
+stored in your browser (IndexedDB) — no database, no cloud service, no
+accounts, and no server-side storage.
 
 ## Features
 
@@ -16,11 +17,12 @@ Everything is stored in your browser — no account, no server.
   and stay in sync with your line items.
 - **Live A4 preview** — the document renders exactly as it prints, updating
   as you type.
-- **Templates** — Estate, Minimal, Navy, and Terracotta, each with a custom
-  header band, footer wave, and background pattern.
+- **Templates & layouts** — different page layouts (Band, Classic letterhead,
+  Banner) with a choice of colour themes per layout, each with its own header,
+  footer wave, and background pattern.
 - **Fonts** — Carlito and Fraunces.
-- **Custom background pattern** — upload your own pattern image or use the
-  built-in flower pattern.
+- **Custom background pattern** — upload a single icon image; it is repeated
+  as a tiled pattern, or use the built-in flower pattern.
 - **Clients** — manage a contact list, with phone and email shown on the
   letter.
 - **Company details & branding** — logo, signature (upload or draw), contact
@@ -37,9 +39,12 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see
 the result.
 
-When Supabase is not configured the app runs entirely in your browser and
-seeds a sample company so you can explore before entering your own data.
-No sample clients or documents are created automatically.
+Your company, clients and documents live in the browser's IndexedDB, so the
+app works on any static host — including Vercel — with no backend at all.
+Uploaded images (logo, signature, pattern) are downscaled and stored in the
+browser too. A sample company is seeded on first run; no sample clients or
+documents are created automatically. Data is tied to one browser on one
+device; use the same browser to keep your data.
 
 ## Scripts
 

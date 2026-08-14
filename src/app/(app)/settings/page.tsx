@@ -9,8 +9,7 @@ import { SignaturePad } from "@/components/settings/signature-pad"
 import { PageHeader } from "@/components/ui/misc"
 import { Button } from "@/components/ui/button"
 import { Field, Input, Select } from "@/components/ui/fields"
-import { uploadImage } from "@/lib/imagekit/upload"
-import { useAuth } from "@/lib/auth/auth-context"
+import { uploadImage } from "@/lib/upload"
 
 async function handleImageUpload(
   file: File,
@@ -49,28 +48,12 @@ function SettingsForm({
   company: Company
   saveCompany: (next: Company) => Promise<void>
 }) {
-  const { configured } = useAuth()
   const [form, setForm] = useState<Company>(company)
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [showPad, setShowPad] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [confirmingDelete, setConfirmingDelete] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-
-  const deleteAccount = async () => {
-    setDeleting(true)
-    try {
-      const res = await fetch("/api/account/delete", { method: "POST" })
-      if (!res.ok) throw new Error(`Delete failed (${res.status})`)
-      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-      window.location.href = "/login?deleted=1"
-    } catch {
-      setDeleting(false)
-      setConfirmingDelete(false)
-    }
-  }
 
   const set = (patch: Partial<Company>) => setForm((prev) => ({ ...prev, ...patch }))
 
@@ -153,7 +136,7 @@ function SettingsForm({
 
         <Field
           label="Background pattern"
-          hint="PNG, JPEG or WebP. Replaces the built-in pattern behind every document and PDF. Toggle it per document in the editor."
+          hint="Upload a single icon image — it is repeated as a tiled pattern behind every document and PDF. Toggle it per document in the editor."
         >
           <div className="flex items-center gap-4">
             {form.patternImage ? (
@@ -381,7 +364,7 @@ function SettingsForm({
                   setUploading(true)
                   setError(null)
                   try {
-                    const url = await uploadImage(dataUrl, "signature.png")
+                    const url = await uploadImage(dataUrl)
                     set({ signature: url })
                   } catch (err) {
                     setError(err instanceof Error ? err.message : "Signature upload failed")
@@ -400,46 +383,6 @@ function SettingsForm({
           </Button>
         </div>
       </div>
-
-      {configured ? (
-        <div className="mt-6 rounded-[12px] border border-danger/30 bg-panel">
-          <div className="p-6">
-            <h2 className="text-[13px] font-bold uppercase tracking-wide text-danger">
-              Danger zone
-            </h2>
-            <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted">
-              Permanently deletes your company, clients, documents and sign-in
-              from Supabase. This cannot be undone.
-            </p>
-            <div className="mt-4 flex items-center gap-3">
-              {!confirmingDelete ? (
-                <Button variant="danger" type="button" onClick={() => setConfirmingDelete(true)}>
-                  Delete my account and all data
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="danger"
-                    type="button"
-                    disabled={deleting}
-                    onClick={() => void deleteAccount()}
-                  >
-                    {deleting ? "Deleting…" : "Yes, delete everything"}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    type="button"
-                    disabled={deleting}
-                    onClick={() => setConfirmingDelete(false)}
-                  >
-                    Cancel
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   )
 }

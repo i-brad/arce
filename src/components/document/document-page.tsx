@@ -76,17 +76,18 @@ export function DocumentPage({
         doc.font === "fraunces" ? "font-fraunces" : "font-document"
       }`}
     >
-      {/* Background pattern: uploaded image, else template flower pattern */}
+      {/* Background pattern: uploaded icon tiled across the page, else template flower pattern */}
       {doc.showPattern ? (
         company.patternImage ? (
-          <Image
-            src={company.patternImage}
-            alt=""
+          <div
             aria-hidden
-            fill
-            sizes="100vw"
-            unoptimized
-            className="pointer-events-none z-[1] object-cover opacity-40"
+            className="tiled-pattern pointer-events-none absolute inset-0 z-[1]"
+            style={{
+              backgroundImage: `url("${company.patternImage}")`,
+              backgroundRepeat: "repeat",
+              backgroundSize: "90px 90px",
+              opacity: 0.4,
+            }}
           />
         ) : tpl.pattern ? (
           <svg aria-hidden className="pointer-events-none absolute inset-0 z-[1] h-full w-full">
@@ -113,7 +114,7 @@ export function DocumentPage({
       ) : null}
 
       {tpl.layout === "classic" ? (
-        <div className="relative z-10 px-[26mm] pt-[16mm] text-center">
+        <div className="relative z-10 px-[26mm] pt-[10mm] text-center">
           {company.logo ? (
             <Image
               src={company.logo}
@@ -121,11 +122,11 @@ export function DocumentPage({
               width={56}
               height={56}
               unoptimized
-              className="mx-auto h-14 w-auto object-contain"
+              className="mx-auto h-12 w-auto object-contain"
             />
           ) : null}
           <p
-            className="mt-3 text-[20px] font-bold leading-snug tracking-wide"
+            className="mt-2 text-[20px] font-bold leading-snug tracking-wide"
             style={{ color: tpl.ink }}
           >
             {company.name}
@@ -143,8 +144,8 @@ export function DocumentPage({
               RC {company.regNo}
             </p>
           ) : null}
-          <div className="mx-auto mt-5 h-px w-full" style={{ backgroundColor: tpl.line }} />
-          <div className="mt-4 flex items-center justify-between">
+          <div className="mx-auto mt-3 h-px w-full" style={{ backgroundColor: tpl.line }} />
+          <div className="mt-3 flex items-center justify-between">
             <p className="text-[11px] tracking-[0.08em]" style={{ color: tpl.muted }}>
               {formatLetterDate(doc.date)}
             </p>
@@ -155,10 +156,10 @@ export function DocumentPage({
         </div>
       ) : tpl.layout === "banner" ? (
         <div className="relative z-10" style={{ backgroundColor: tpl.bandBg }}>
-          <div className="px-[22mm] pb-6 pt-[14mm] text-center">
+          <div className="px-[22mm] pb-3 pt-[7mm] text-center">
             {company.logo ? (
               <div
-                className="mx-auto flex size-16 shrink-0 items-center justify-center rounded-2xl bg-white p-2"
+                className="mx-auto flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white p-1.5"
                 style={{ backgroundColor: tpl.white }}
               >
                 <div className="relative h-full w-full">
@@ -166,7 +167,7 @@ export function DocumentPage({
                     src={company.logo}
                     alt={`${company.name} logo`}
                     fill
-                    sizes="48px"
+                    sizes="36px"
                     unoptimized
                     className="object-contain"
                   />
@@ -174,26 +175,26 @@ export function DocumentPage({
               </div>
             ) : null}
             <p
-              className="mt-3 text-[24px] font-bold leading-tight tracking-wide"
+              className="mt-2 text-[17px] font-bold leading-tight tracking-wide"
               style={{ color: tpl.bandText }}
             >
               {company.name}
             </p>
             {contactLine ? (
               <p
-                className="mx-auto mt-1.5 max-w-[140mm] text-[10.5px] leading-snug"
+                className="mx-auto mt-1 max-w-[140mm] text-[10px] leading-snug"
                 style={{ color: tpl.bandMuted }}
               >
                 {contactLine}
+                {company.regNo ? ` · RC ${company.regNo}` : ""}
               </p>
-            ) : null}
-            {company.regNo ? (
-              <p className="mt-0.5 text-[10px]" style={{ color: tpl.bandMuted }}>
+            ) : company.regNo ? (
+              <p className="mx-auto mt-1 text-[10px]" style={{ color: tpl.bandMuted }}>
                 RC {company.regNo}
               </p>
             ) : null}
             <div
-              className="mt-6 flex items-center justify-between border-t pt-3"
+              className="mt-2 flex items-center justify-between border-t pt-1.5"
               style={{ borderColor: tpl.bandMuted }}
             >
               <p
@@ -338,7 +339,7 @@ export function DocumentPage({
         className="relative flex flex-1 flex-col px-[22mm]"
         style={{
           paddingBottom: tpl.wave ? (hasFooter ? "12mm" : "34mm") : "16mm",
-          paddingTop: tpl.layout === "classic" ? "8mm" : tpl.layout === "banner" ? "18mm" : tpl.band ? "20mm" : "10mm",
+          paddingTop: tpl.layout === "classic" ? "7mm" : tpl.layout === "banner" ? "11mm" : tpl.band ? "20mm" : "10mm",
         }}
       >
         {/* Background shapes */}
@@ -522,7 +523,7 @@ export function DocumentPage({
             className="px-[22mm] text-center"
             style={
               tpl.band
-                ? { paddingTop: "7mm", paddingBottom: tpl.wave ? "20mm" : "9mm" }
+                ? { paddingTop: "7mm", paddingBottom: tpl.wave ? "17mm" : "9mm" }
                 : {
                     borderTopWidth: 1,
                     borderTopColor: tpl.line,

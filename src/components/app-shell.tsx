@@ -1,45 +1,11 @@
 "use client";
 
 import { LinkButton } from "@/components/ui/button";
-import { useAuth } from "@/lib/auth/auth-context";
 import { cn } from "@/lib/utils/cn";
-import type { User } from "@supabase/supabase-js";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-
-function UserAvatar({ user, size = 28 }: { user: User; size?: number }) {
-  const meta = user.user_metadata ?? {};
-  const avatarUrl: string | undefined =
-    meta.avatar_url ??
-    meta.picture ??
-    user.identities?.[0]?.identity_data?.avatar_url;
-  const name: string = meta.full_name ?? meta.name ?? "";
-  const initials = (name || user.email || "?").slice(0, 2).toUpperCase();
-  if (avatarUrl) {
-    return (
-      <Image
-        src={avatarUrl}
-        alt=""
-        width={size}
-        height={size}
-        unoptimized
-        className="shrink-0 rounded-full object-cover"
-        style={{ width: size, height: size }}
-      />
-    );
-  }
-  return (
-    <span
-      className="flex shrink-0 items-center justify-center rounded-full bg-accent font-bold text-white"
-      style={{ width: size, height: size, fontSize: Math.max(10, size * 0.38) }}
-      aria-hidden
-    >
-      {initials}
-    </span>
-  );
-}
+import { useEffect, useState, type ReactNode } from "react";
 
 function NavIcon({ children }: { children: ReactNode }) {
   return (
@@ -168,67 +134,6 @@ function NavLinks({
   );
 }
 
-function UserMenu() {
-  const { user, signOut } = useAuth();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onDocClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
-  if (!user) return null;
-
-  const meta = user.user_metadata ?? {};
-  const name: string = meta.full_name ?? meta.name ?? user.email ?? "";
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        aria-label="Account menu"
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2.5 rounded-full pr-0.5 pl-3 py-1 transition ring-accent/30 hover:bg-ink/[0.04] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-      >
-        <span className="hidden max-w-40 truncate text-sm font-medium text-ink lg:block">
-          {name}
-        </span>
-        <UserAvatar user={user} />
-      </button>
-      {open ? (
-        <div className="absolute right-0 top-full mt-2 w-60 rounded-[10px] border border-line bg-panel p-2 shadow-lg">
-          <div className="px-3 py-2">
-            <p className="truncate text-sm font-medium text-ink">{name}</p>
-            <p className="truncate text-xs text-muted">{user.email}</p>
-          </div>
-          <div className="my-1 border-t border-line" />
-          <button
-            type="button"
-            onClick={() => void signOut()}
-            className="flex w-full items-center rounded-[6px] px-3 py-2 text-sm text-muted transition-colors hover:bg-ink/[0.04] hover:text-ink"
-          >
-            Sign out
-          </button>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 function SidebarFooter() {
   return (
     <div className="border-t border-line px-5 py-3 text-[11px] leading-relaxed text-faint">
@@ -318,7 +223,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           <LinkButton href="/documents/new" size="sm">
             New
           </LinkButton>
-          <UserMenu />
         </div>
       </header>
 
@@ -399,7 +303,6 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="lg:ml-56">
         <header className="print-hide sticky top-0 z-20 hidden h-14 items-center justify-between border-b border-line bg-panel px-6 lg:flex lg:px-10">
           <p className="text-sm font-medium text-ink">{activeLabel}</p>
-          <UserMenu />
         </header>
         <div
           className={cn(

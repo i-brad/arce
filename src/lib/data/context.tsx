@@ -9,13 +9,10 @@ import {
   useState,
   type ReactNode,
 } from "react"
-import { LocalStorageRepository } from "./local-storage-repository"
-import { HttpRepository } from "./http-repository"
-import { useAuth } from "@/lib/auth/auth-context"
-import { supabaseConfigured } from "@/lib/env"
+import { BrowserRepository } from "./local-repository"
 import type { Client, Company, InvoiceDocument } from "./types"
 
-const repo = supabaseConfigured ? new HttpRepository() : new LocalStorageRepository()
+const repo = new BrowserRepository()
 
 interface DataContextValue {
   ready: boolean
@@ -33,18 +30,15 @@ interface DataContextValue {
 const DataContext = createContext<DataContextValue | null>(null)
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth()
-  const userId = user?.id ?? null
   const [state, setState] = useState<{
-    loadedFor: string | null
+    loaded: boolean
     company: Company | null
     clients: Client[]
     documents: InvoiceDocument[]
     error: string | null
-  }>({ loadedFor: null, company: null, clients: [], documents: [], error: null })
+  }>({ loaded: false, company: null, clients: [], documents: [], error: null })
 
   useEffect(() => {
-    if (supabaseConfigured && !userId) return
     let mounted = true
     void (async () => {
       try {
@@ -55,7 +49,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         ])
         if (!mounted) return
         setState({
-          loadedFor: userId,
+          loaded: true,
           company,
           clients,
           documents: documents.sort((a, b) => b.date.localeCompare(a.date)),
@@ -63,24 +57,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
         })
       } catch (err) {
         if (!mounted) return
-        if (supabaseConfigured && err instanceof Error && err.message === "Not signed in") {
-          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-          window.location.href = "/login"
-          return
-        }
-        setState((prev) => ({ ...prev, error: err instanceof Error ? err.message : String(err) }))
+        setState({
+          loaded: true,
+          company: null,
+          clients: [],
+          documents: [],
+          error: err instanceof Error ? err.message : String(err),
+        })
       }
     })()
     return () => {
       mounted = false
     }
-  }, [userId])
+  }, [])
 
-  const ready = supabaseConfigured
-    ? Boolean(state.loadedFor) && state.loadedFor === userId
-    : Boolean(state.loadedFor)
-
-  const { company, clients, documents, error } = state
+  const { loaded, company, clients, documents, error } = state
 
   const saveCompany = useCallback(async (next: Company) => {
     await repo.saveCompany(next)
@@ -125,7 +116,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({
-      ready,
+      ready: loaded,
       error,
       company,
       clients,
@@ -136,7 +127,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       saveDocument,
       deleteDocument,
     }),
-    [ready, error, company, clients, documents, saveCompany, saveClient, deleteClient, saveDocument, deleteDocument],
+    [loaded, error, company, clients, documents, saveCompany, saveClient, deleteClient, saveDocument, deleteDocument],
   )
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>

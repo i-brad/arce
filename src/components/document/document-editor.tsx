@@ -3,7 +3,7 @@
 import type { Client, DocFont, DocType, InvoiceDocument, ItemSection, LineItem } from "@/lib/data/types"
 import { DOC_TYPE_LABELS } from "@/lib/data/types"
 import { newLineItem } from "@/lib/documents/document-utils"
-import { templateList, type TemplateId } from "@/lib/documents/theme"
+import { layoutLabels, templateList, type LayoutId, type TemplateId } from "@/lib/documents/theme"
 import { uid } from "@/lib/utils/id"
 import { Button } from "@/components/ui/button"
 import { Field, Input, Select, Textarea } from "@/components/ui/fields"
@@ -42,6 +42,16 @@ function updateItem(
 function removeSection(doc: InvoiceDocument, sectionId: string): InvoiceDocument {
   return { ...doc, sections: doc.sections.filter((s) => s.id !== sectionId) }
 }
+
+const layoutOrder: LayoutId[] = ["band", "classic", "banner"]
+
+const templateGroups = layoutOrder
+  .map((layout) => ({
+    layout,
+    label: layoutLabels[layout],
+    templates: templateList.filter((tpl) => tpl.layout === layout),
+  }))
+  .filter((group) => group.templates.length > 0)
 
 export function DocumentEditor({ doc, clients, onChange }: DocumentEditorProps) {
   const set = (patch: Partial<InvoiceDocument>) => onChange({ ...doc, ...patch })
@@ -99,15 +109,19 @@ export function DocumentEditor({ doc, clients, onChange }: DocumentEditorProps) 
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Template">
+          <Field label="Template" hint="Each template uses a different page layout, not just colours.">
             <Select
               value={doc.template}
               onChange={(e) => set({ template: e.target.value as TemplateId })}
             >
-              {templateList.map((tpl) => (
-                <option key={tpl.id} value={tpl.id}>
-                  {tpl.label}
-                </option>
+              {templateGroups.map((group) => (
+                <optgroup key={group.layout} label={group.label}>
+                  {group.templates.map((tpl) => (
+                    <option key={tpl.id} value={tpl.id}>
+                      {tpl.label}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </Select>
           </Field>
