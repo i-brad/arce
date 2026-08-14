@@ -1,10 +1,10 @@
-import type { Company } from "./types"
+import type { Company } from "./types";
 
 export function seedCompany(): Company {
   return {
     id: "company_default",
-    name: "Silver Pacific Homes",
-    address: "Southern Atlantic Estate, Okun Imosan, Ibeju Lekki, Lagos",
+    name: "Casa khanya Homes",
+    address: "Casa Khanya Estate, Olorunda, Akobo, Ibadan",
     phone: "",
     email: "",
     whatsapp: "",
@@ -21,5 +21,5 @@ export function seedCompany(): Company {
     signatoryName: "",
     signatoryRole: "Director of Operations",
     defaultTemplate: "estate",
-  }
+  };
 }

@@ -1,6 +1,6 @@
 # Invoicing for Real Estates — Design spec
 
-Built from the reference file: `assets/Acknowledgment Letter for MR OLUWAFEMI ALOFE OLUWADAMILARE 8th april.pdf` (Silver Pacific Homes, Nigeria).
+Built from the reference file.
 
 ## What this is not
 

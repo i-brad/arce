@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { useData } from "@/lib/data/context"
-import type { Company } from "@/lib/data/types"
-import { templateList, type TemplateId } from "@/lib/documents/theme"
-import { SignaturePad } from "@/components/settings/signature-pad"
-import { PageHeader } from "@/components/ui/misc"
-import { Button } from "@/components/ui/button"
-import { Field, Input, Select } from "@/components/ui/fields"
-import { uploadImage } from "@/lib/upload"
+import { SignaturePad } from "@/components/settings/signature-pad";
+import { Button } from "@/components/ui/button";
+import { Field, Input, Select } from "@/components/ui/fields";
+import { PageHeader } from "@/components/ui/misc";
+import { useData } from "@/lib/data/context";
+import type { Company } from "@/lib/data/types";
+import { templateList, type TemplateId } from "@/lib/documents/theme";
+import { uploadImage } from "@/lib/upload";
+import Image from "next/image";
+import { useState } from "react";
 
 async function handleImageUpload(
   file: File,
@@ -18,58 +18,57 @@ async function handleImageUpload(
   setUploading: (busy: boolean) => void,
   onError: (message: string) => void,
 ) {
-  setUploading(true)
+  setUploading(true);
   try {
-    const url = await uploadImage(file)
-    set({ [key]: url } as Partial<Company>)
+    const url = await uploadImage(file);
+    set({ [key]: url } as Partial<Company>);
   } catch (err) {
-    onError(err instanceof Error ? err.message : "Upload failed")
+    onError(err instanceof Error ? err.message : "Upload failed");
   } finally {
-    setUploading(false)
+    setUploading(false);
   }
 }
 
 export default function SettingsPage() {
-  const { ready, company, saveCompany } = useData()
+  const { ready, company, saveCompany } = useData();
 
   if (!ready || !company) {
-    return <p className="text-sm text-muted">Loading…</p>
+    return <p className="text-sm text-muted">Loading…</p>;
   }
 
-  return (
-    <SettingsForm company={company} saveCompany={saveCompany} />
-  )
+  return <SettingsForm company={company} saveCompany={saveCompany} />;
 }
 
 function SettingsForm({
   company,
   saveCompany,
 }: {
-  company: Company
-  saveCompany: (next: Company) => Promise<void>
+  company: Company;
+  saveCompany: (next: Company) => Promise<void>;
 }) {
-  const [form, setForm] = useState<Company>(company)
-  const [saved, setSaved] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [showPad, setShowPad] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [form, setForm] = useState<Company>(company);
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [showPad, setShowPad] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const set = (patch: Partial<Company>) => setForm((prev) => ({ ...prev, ...patch }))
+  const set = (patch: Partial<Company>) =>
+    setForm((prev) => ({ ...prev, ...patch }));
 
   const save = async () => {
-    setError(null)
-    setSaving(true)
+    setError(null);
+    setSaving(true);
     try {
-      await saveCompany(form)
-      setSaved(true)
-      window.setTimeout(() => setSaved(false), 2000)
+      await saveCompany(form);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save settings")
+      setError(err instanceof Error ? err.message : "Failed to save settings");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   return (
     <div className="max-w-xl">
@@ -83,7 +82,7 @@ function SettingsForm({
           <Input
             value={form.name}
             onChange={(e) => set({ name: e.target.value })}
-            placeholder="Silver Pacific Homes"
+            placeholder="Casa khanya Homes"
           />
         </Field>
 
@@ -118,19 +117,32 @@ function SettingsForm({
                 className="hidden"
                 disabled={uploading}
                 onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  void handleImageUpload(file, set, "logo", setUploading, setError)
-                  e.target.value = ""
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  void handleImageUpload(
+                    file,
+                    set,
+                    "logo",
+                    setUploading,
+                    setError,
+                  );
+                  e.target.value = "";
                 }}
               />
             </label>
             {form.logo ? (
-              <Button variant="ghost" size="md" type="button" onClick={() => set({ logo: "" })}>
+              <Button
+                variant="ghost"
+                size="md"
+                type="button"
+                onClick={() => set({ logo: "" })}
+              >
                 Remove
               </Button>
             ) : null}
-            {uploading ? <span className="text-xs text-muted">Uploading…</span> : null}
+            {uploading ? (
+              <span className="text-xs text-muted">Uploading…</span>
+            ) : null}
           </div>
         </Field>
 
@@ -165,15 +177,26 @@ function SettingsForm({
                 className="hidden"
                 disabled={uploading}
                 onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  void handleImageUpload(file, set, "patternImage", setUploading, setError)
-                  e.target.value = ""
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  void handleImageUpload(
+                    file,
+                    set,
+                    "patternImage",
+                    setUploading,
+                    setError,
+                  );
+                  e.target.value = "";
                 }}
               />
             </label>
             {form.patternImage ? (
-              <Button variant="ghost" size="md" type="button" onClick={() => set({ patternImage: "" })}>
+              <Button
+                variant="ghost"
+                size="md"
+                type="button"
+                onClick={() => set({ patternImage: "" })}
+              >
                 Remove
               </Button>
             ) : null}
@@ -204,7 +227,10 @@ function SettingsForm({
             />
           </Field>
         </div>
-        <Field label="WhatsApp" hint="Shown alongside your other contacts on the document.">
+        <Field
+          label="WhatsApp"
+          hint="Shown alongside your other contacts on the document."
+        >
           <Input
             value={form.whatsapp}
             onChange={(e) => set({ whatsapp: e.target.value })}
@@ -217,7 +243,8 @@ function SettingsForm({
             Socials
           </h3>
           <p className="mb-4 mt-1 text-xs text-muted">
-            Contact details and socials are rendered in the footer of every document and PDF.
+            Contact details and socials are rendered in the footer of every
+            document and PDF.
           </p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Website">
@@ -278,7 +305,9 @@ function SettingsForm({
         >
           <Select
             value={form.defaultTemplate}
-            onChange={(e) => set({ defaultTemplate: e.target.value as TemplateId })}
+            onChange={(e) =>
+              set({ defaultTemplate: e.target.value as TemplateId })
+            }
           >
             {templateList.map((tpl) => (
               <option key={tpl.id} value={tpl.id}>
@@ -335,22 +364,38 @@ function SettingsForm({
                 className="hidden"
                 disabled={uploading}
                 onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  void handleImageUpload(file, set, "signature", setUploading, setError)
-                  e.target.value = ""
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  void handleImageUpload(
+                    file,
+                    set,
+                    "signature",
+                    setUploading,
+                    setError,
+                  );
+                  e.target.value = "";
                 }}
               />
             </label>
-            <Button variant="secondary" type="button" onClick={() => setShowPad(true)}>
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => setShowPad(true)}
+            >
               {form.signature ? "Redraw" : "Draw"}
             </Button>
             {form.signature ? (
-              <Button variant="ghost" type="button" onClick={() => set({ signature: "" })}>
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={() => set({ signature: "" })}
+              >
                 Remove
               </Button>
             ) : null}
-            {uploading ? <span className="text-xs text-muted">Uploading…</span> : null}
+            {uploading ? (
+              <span className="text-xs text-muted">Uploading…</span>
+            ) : null}
           </div>
           {showPad ? (
             <div className="mt-3 rounded-[8px] border border-line p-4">
@@ -360,16 +405,20 @@ function SettingsForm({
               <SignaturePad
                 onCancel={() => setShowPad(false)}
                 onSave={async (dataUrl) => {
-                  setShowPad(false)
-                  setUploading(true)
-                  setError(null)
+                  setShowPad(false);
+                  setUploading(true);
+                  setError(null);
                   try {
-                    const url = await uploadImage(dataUrl)
-                    set({ signature: url })
+                    const url = await uploadImage(dataUrl);
+                    set({ signature: url });
                   } catch (err) {
-                    setError(err instanceof Error ? err.message : "Signature upload failed")
+                    setError(
+                      err instanceof Error
+                        ? err.message
+                        : "Signature upload failed",
+                    );
                   } finally {
-                    setUploading(false)
+                    setUploading(false);
                   }
                 }}
               />
@@ -384,5 +433,5 @@ function SettingsForm({
         </div>
       </div>
     </div>
-  )
+  );
 }
