@@ -1,6 +1,6 @@
-export const FLOWER_SPACING = 62
-export const FLOWER_PETAL_R = 7
-export const FLOWER_CENTER_R = 1.8
+export const FLOWER_SPACING = 74
+export const FLOWER_PETAL_R = 4
+export const FLOWER_CENTER_R = 1.4
 
 export interface FlowerShape {
   path: string

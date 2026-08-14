@@ -1,50 +1,123 @@
-import type { Client, Company, InvoiceDocument } from "@/lib/data/types"
+import type { Client, Company, InvoiceDocument } from "@/lib/data/types";
 import {
   companyContactLine,
   companySocials,
   formatLetterDate,
   renderTemplate,
   totalOf,
-} from "@/lib/documents/document-utils"
-import { SOCIAL_ICONS, SOCIAL_STROKE_WIDTH, type SocialKey } from "@/lib/documents/social-icons"
-import { footerWaves, getTemplate, headerWaves } from "@/lib/documents/theme"
-import { FLOWER_CENTER_R, FLOWER_PETAL_R, FLOWER_SPACING, flowerPath } from "@/lib/documents/patterns"
-import { formatNaira } from "@/lib/utils/currency"
-import Image from "next/image"
+} from "@/lib/documents/document-utils";
+import {
+  FLOWER_CENTER_R,
+  FLOWER_PETAL_R,
+  FLOWER_SPACING,
+  flowerPath,
+} from "@/lib/documents/patterns";
+import {
+  SOCIAL_ICONS,
+  SOCIAL_STROKE_WIDTH,
+  type SocialKey,
+} from "@/lib/documents/social-icons";
+import { footerWaves, getTemplate, headerWaves } from "@/lib/documents/theme";
+import { formatNaira } from "@/lib/utils/currency";
+import Image from "next/image";
+import { useId } from "react";
 
-function SocialIcon({ kind, size, color }: { kind: SocialKey; size: number; color: string }) {
-  const icon = SOCIAL_ICONS[kind]
+function SocialIcon({
+  kind,
+  size,
+  color,
+}: {
+  kind: SocialKey;
+  size: number;
+  color: string;
+}) {
+  const icon = SOCIAL_ICONS[kind];
   return (
-    <svg viewBox={icon.viewBox} width={size} height={size} aria-hidden focusable="false">
+    <svg
+      viewBox={icon.viewBox}
+      width={size}
+      height={size}
+      aria-hidden
+      focusable="false"
+    >
       {icon.shapes.map((shape, i) => {
-        const stroke = shape.mode === "stroke"
+        const stroke = shape.mode === "stroke";
         if (shape.t === "path") {
           return stroke ? (
-            <path key={i} d={shape.d} fill="none" stroke={color} strokeWidth={SOCIAL_STROKE_WIDTH} strokeLinecap="round" />
+            <path
+              key={i}
+              d={shape.d}
+              fill="none"
+              stroke={color}
+              strokeWidth={SOCIAL_STROKE_WIDTH}
+              strokeLinecap="round"
+            />
           ) : (
             <path key={i} d={shape.d} fill={color} />
-          )
+          );
         }
         if (shape.t === "circle") {
           return stroke ? (
-            <circle key={i} cx={shape.cx} cy={shape.cy} r={shape.r} fill="none" stroke={color} strokeWidth={SOCIAL_STROKE_WIDTH} strokeLinecap="round" />
+            <circle
+              key={i}
+              cx={shape.cx}
+              cy={shape.cy}
+              r={shape.r}
+              fill="none"
+              stroke={color}
+              strokeWidth={SOCIAL_STROKE_WIDTH}
+              strokeLinecap="round"
+            />
           ) : (
-            <circle key={i} cx={shape.cx} cy={shape.cy} r={shape.r} fill={color} />
-          )
+            <circle
+              key={i}
+              cx={shape.cx}
+              cy={shape.cy}
+              r={shape.r}
+              fill={color}
+            />
+          );
         }
         if (shape.t === "ellipse") {
           return stroke ? (
-            <ellipse key={i} cx={shape.cx} cy={shape.cy} rx={shape.rx} ry={shape.ry} fill="none" stroke={color} strokeWidth={SOCIAL_STROKE_WIDTH} strokeLinecap="round" />
+            <ellipse
+              key={i}
+              cx={shape.cx}
+              cy={shape.cy}
+              rx={shape.rx}
+              ry={shape.ry}
+              fill="none"
+              stroke={color}
+              strokeWidth={SOCIAL_STROKE_WIDTH}
+              strokeLinecap="round"
+            />
           ) : (
-            <ellipse key={i} cx={shape.cx} cy={shape.cy} rx={shape.rx} ry={shape.ry} fill={color} />
-          )
+            <ellipse
+              key={i}
+              cx={shape.cx}
+              cy={shape.cy}
+              rx={shape.rx}
+              ry={shape.ry}
+              fill={color}
+            />
+          );
         }
         return (
-          <line key={i} x1={shape.x1} y1={shape.y1} x2={shape.x2} y2={shape.y2} fill="none" stroke={color} strokeWidth={SOCIAL_STROKE_WIDTH} strokeLinecap="round" />
-        )
+          <line
+            key={i}
+            x1={shape.x1}
+            y1={shape.y1}
+            x2={shape.x2}
+            y2={shape.y2}
+            fill="none"
+            stroke={color}
+            strokeWidth={SOCIAL_STROKE_WIDTH}
+            strokeLinecap="round"
+          />
+        );
       })}
     </svg>
-  )
+  );
 }
 
 export function DocumentPage({
@@ -52,23 +125,29 @@ export function DocumentPage({
   company,
   client,
 }: {
-  doc: InvoiceDocument
-  company: Company
-  client?: Client
+  doc: InvoiceDocument;
+  company: Company;
+  client?: Client;
 }) {
-  const tpl = getTemplate(doc.template)
-  const body = renderTemplate(doc.body, doc)
-  const closing = renderTemplate(doc.closing, doc)
-  const thanks = renderTemplate(doc.thanks, doc)
-  const total = totalOf(doc)
-  const waves = footerWaves(794, 96)
-  const topWaves = headerWaves(794, 40)
-  const contactLine = companyContactLine(company)
-  const socials = companySocials(company)
-  const hasFooter = Boolean(contactLine || socials.length)
-  const pt = 4 / 3
-  const tile = FLOWER_SPACING * pt
-  const flower = flowerPath(tile / 2, tile / 2, FLOWER_PETAL_R * pt, FLOWER_CENTER_R * pt)
+  const tpl = getTemplate(doc.template);
+  const patternId = useId().replace(/[^a-zA-Z0-9-]/g, "");
+  const body = renderTemplate(doc.body, doc);
+  const closing = renderTemplate(doc.closing, doc);
+  const thanks = renderTemplate(doc.thanks, doc);
+  const total = totalOf(doc);
+  const waves = footerWaves(794, 96);
+  const topWaves = headerWaves(794, 40);
+  const contactLine = companyContactLine(company);
+  const socials = companySocials(company);
+  const hasFooter = Boolean(contactLine || socials.length);
+  const pt = 4 / 3;
+  const tile = FLOWER_SPACING * pt;
+  const flower = flowerPath(
+    tile / 2,
+    tile / 2,
+    FLOWER_PETAL_R * pt,
+    FLOWER_CENTER_R * pt,
+  );
 
   return (
     <div
@@ -81,40 +160,43 @@ export function DocumentPage({
         company.patternImage ? (
           <div
             aria-hidden
-            className="tiled-pattern pointer-events-none absolute inset-0 z-[1]"
+            className="tiled-pattern pointer-events-none absolute inset-0 z-1"
             style={{
               backgroundImage: `url("${company.patternImage}")`,
               backgroundRepeat: "repeat",
-              backgroundSize: "90px 90px",
-              opacity: 0.4,
+              backgroundSize: "92px 92px",
+              opacity: 0.05,
             }}
           />
         ) : tpl.pattern ? (
-          <svg aria-hidden className="pointer-events-none absolute inset-0 z-[1] h-full w-full">
+          <svg
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-[1] h-full w-full"
+          >
             <defs>
               <pattern
-                id={`pattern-${tpl.id}`}
+                id={patternId}
                 width={tile}
                 height={tile}
                 patternUnits="userSpaceOnUse"
               >
-                <path d={flower.path} fill={tpl.primary} opacity="0.09" />
+                <path d={flower.path} fill={tpl.primary} opacity="0.05" />
                 <circle
                   cx={flower.centerX}
                   cy={flower.centerY}
                   r={flower.centerR}
                   fill={tpl.primary}
-                  opacity="0.09"
+                  opacity="0.05"
                 />
               </pattern>
             </defs>
-            <rect width="100%" height="100%" fill={`url(#pattern-${tpl.id})`} />
+            <rect width="100%" height="100%" fill={`url(#${patternId})`} />
           </svg>
         ) : null
       ) : null}
 
       {tpl.layout === "classic" ? (
-        <div className="relative z-10 px-[26mm] pt-[10mm] text-center">
+        <div className="relative z-10 px-[26mm] pt-[8mm] text-center">
           {company.logo ? (
             <Image
               src={company.logo}
@@ -144,22 +226,31 @@ export function DocumentPage({
               RC {company.regNo}
             </p>
           ) : null}
-          <div className="mx-auto mt-3 h-px w-full" style={{ backgroundColor: tpl.line }} />
+          <div
+            className="mx-auto mt-3 h-px w-full"
+            style={{ backgroundColor: tpl.line }}
+          />
           <div className="mt-3 flex items-center justify-between">
-            <p className="text-[11px] tracking-[0.08em]" style={{ color: tpl.muted }}>
+            <p
+              className="text-[11px] tracking-[0.08em]"
+              style={{ color: tpl.muted }}
+            >
               {formatLetterDate(doc.date)}
             </p>
-            <p className="text-[11px] tracking-[0.08em]" style={{ color: tpl.muted }}>
+            <p
+              className="text-[11px] tracking-[0.08em]"
+              style={{ color: tpl.muted }}
+            >
               Ref: {doc.number}
             </p>
           </div>
         </div>
       ) : tpl.layout === "banner" ? (
         <div className="relative z-10" style={{ backgroundColor: tpl.bandBg }}>
-          <div className="px-[22mm] pb-3 pt-[7mm] text-center">
+          <div className="px-[22mm] pb-2.5 pt-[6mm] text-center">
             {company.logo ? (
               <div
-                className="mx-auto flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white p-1.5"
+                className="mx-auto flex size-10 shrink-0 items-center justify-center rounded-2xl bg-white p-1.5"
                 style={{ backgroundColor: tpl.white }}
               >
                 <div className="relative h-full w-full">
@@ -189,7 +280,10 @@ export function DocumentPage({
                 {company.regNo ? ` · RC ${company.regNo}` : ""}
               </p>
             ) : company.regNo ? (
-              <p className="mx-auto mt-1 text-[10px]" style={{ color: tpl.bandMuted }}>
+              <p
+                className="mx-auto mt-1 text-[10px]"
+                style={{ color: tpl.bandMuted }}
+              >
                 RC {company.regNo}
               </p>
             ) : null}
@@ -211,7 +305,10 @@ export function DocumentPage({
               </p>
             </div>
           </div>
-          <div className="h-[4px] w-full" style={{ backgroundColor: tpl.accentStrip }} />
+          <div
+            className="h-[4px] w-full"
+            style={{ backgroundColor: tpl.accentStrip }}
+          />
           {tpl.wave ? (
             <svg
               aria-hidden
@@ -226,11 +323,11 @@ export function DocumentPage({
         </div>
       ) : tpl.band ? (
         <div className="relative z-10" style={{ backgroundColor: tpl.bandBg }}>
-          <div className="flex items-start justify-between gap-8 px-[22mm] pb-7 pt-8">
+          <div className="flex items-start justify-between gap-8 px-[22mm] pb-5 pt-6">
             <div className="flex items-start gap-4">
               {company.logo ? (
                 <div
-                  className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-white p-1.5"
+                  className="flex size-13 shrink-0 items-center justify-center rounded-xl bg-white p-1.5"
                   style={{ backgroundColor: tpl.white }}
                 >
                   <div className="relative h-full w-full">
@@ -275,12 +372,18 @@ export function DocumentPage({
               >
                 {formatLetterDate(doc.date)}
               </p>
-              <p className="mt-0.5 whitespace-nowrap text-[10.5px]" style={{ color: tpl.bandMuted }}>
+              <p
+                className="mt-0.5 whitespace-nowrap text-[10.5px]"
+                style={{ color: tpl.bandMuted }}
+              >
                 Ref: {doc.number}
               </p>
             </div>
           </div>
-          <div className="h-[4px] w-full" style={{ backgroundColor: tpl.accentStrip }} />
+          <div
+            className="h-[4px] w-full"
+            style={{ backgroundColor: tpl.accentStrip }}
+          />
           {tpl.wave ? (
             <svg
               aria-hidden
@@ -294,7 +397,7 @@ export function DocumentPage({
           ) : null}
         </div>
       ) : (
-        <div className="flex items-start justify-between gap-8 px-[22mm] pt-[14mm]">
+        <div className="flex items-start justify-between gap-8 px-[22mm] pt-[12mm]">
           <div className="flex items-start gap-4">
             {company.logo ? (
               <Image
@@ -313,21 +416,33 @@ export function DocumentPage({
               >
                 {company.name}
               </p>
-              <p className="mt-1 max-w-[115mm] text-[10.5px] leading-snug" style={{ color: tpl.muted }}>
+              <p
+                className="mt-1 max-w-[115mm] text-[10.5px] leading-snug"
+                style={{ color: tpl.muted }}
+              >
                 {contactLine}
               </p>
               {company.regNo ? (
-                <p className="mt-0.5 text-[10px] leading-snug" style={{ color: tpl.muted }}>
+                <p
+                  className="mt-0.5 text-[10px] leading-snug"
+                  style={{ color: tpl.muted }}
+                >
                   RC {company.regNo}
                 </p>
               ) : null}
             </div>
           </div>
           <div className="text-right">
-            <p className="whitespace-nowrap text-[12px] font-bold tracking-[0.08em]" style={{ color: tpl.ink }}>
+            <p
+              className="whitespace-nowrap text-[12px] font-bold tracking-[0.08em]"
+              style={{ color: tpl.ink }}
+            >
               {formatLetterDate(doc.date)}
             </p>
-            <p className="mt-0.5 whitespace-nowrap text-[10.5px]" style={{ color: tpl.muted }}>
+            <p
+              className="mt-0.5 whitespace-nowrap text-[10.5px]"
+              style={{ color: tpl.muted }}
+            >
               Ref: {doc.number}
             </p>
           </div>
@@ -338,8 +453,15 @@ export function DocumentPage({
       <div
         className="relative flex flex-1 flex-col px-[22mm]"
         style={{
-          paddingBottom: tpl.wave ? (hasFooter ? "12mm" : "34mm") : "16mm",
-          paddingTop: tpl.layout === "classic" ? "7mm" : tpl.layout === "banner" ? "11mm" : tpl.band ? "20mm" : "10mm",
+          paddingBottom: tpl.wave ? (hasFooter ? "10mm" : "32mm") : "14mm",
+          paddingTop:
+            tpl.layout === "classic"
+              ? "7mm"
+              : tpl.layout === "banner"
+                ? "13mm"
+                : tpl.band
+                  ? "14mm"
+                  : "9mm",
         }}
       >
         {/* Background shapes */}
@@ -361,14 +483,23 @@ export function DocumentPage({
         <div className="relative z-10">
           {client ? (
             <>
-              <p className="text-[12px] font-bold leading-relaxed" style={{ color: tpl.ink }}>
+              <p
+                className="text-base font-bold leading-relaxed"
+                style={{ color: tpl.ink }}
+              >
                 {client.name}
               </p>
-              <p className="mt-0.5 text-[11px] leading-relaxed" style={{ color: tpl.muted }}>
+              <p
+                className="text-xs leading-relaxed"
+                style={{ color: tpl.muted }}
+              >
                 {client.address}
               </p>
               {client.phone || client.email ? (
-                <p className="mt-0.5 text-[11px] leading-relaxed" style={{ color: tpl.muted }}>
+                <p
+                  className="text-xs leading-relaxed"
+                  style={{ color: tpl.muted }}
+                >
                   {[
                     client.phone ? `Tel: ${client.phone}` : "",
                     client.email ? `Email: ${client.email}` : "",
@@ -380,11 +511,14 @@ export function DocumentPage({
             </>
           ) : null}
 
-          <p className="mt-6 text-[12px] leading-relaxed" style={{ color: tpl.ink }}>
+          <p
+            className="mt-3 text-[12px] leading-relaxed"
+            style={{ color: tpl.ink }}
+          >
             {doc.salutation}
           </p>
 
-          <div className="mt-8 text-center">
+          <div className="mt-4 text-center">
             <h1
               className="text-[17px] font-bold uppercase tracking-[0.12em]"
               style={{ color: tpl.titleAccent ? tpl.primary : tpl.ink }}
@@ -392,31 +526,43 @@ export function DocumentPage({
               {doc.title}
             </h1>
             {tpl.titleAccent ? (
-              <div className="mx-auto mt-3 h-[3px] w-16" style={{ backgroundColor: tpl.primary }} />
+              <div
+                className="mx-auto mt-2 h-0.75 w-16"
+                style={{ backgroundColor: tpl.primary }}
+              />
             ) : null}
           </div>
 
-          <p className="mt-7 text-[12px] leading-[1.85] text-justify" style={{ color: tpl.ink }}>
+          <p
+            className="mt-4 text-[12px] leading-[1.85] text-justify"
+            style={{ color: tpl.ink }}
+          >
             {body}
           </p>
 
-          <p className="mt-7 text-[12px] leading-relaxed" style={{ color: tpl.ink }}>
+          <p
+            className="mt-4 text-[12px] leading-relaxed"
+            style={{ color: tpl.ink }}
+          >
             {doc.breakdownHeading}
           </p>
 
-          <div className="mt-4">
+          <div className="mt-3">
             {doc.sections.map((section) => (
               <div key={section.id}>
                 {section.label ? (
                   tpl.titleAccent ? (
                     <p
-                      className="mt-4 border-l-[3px] pl-2.5 text-[12px] font-bold uppercase tracking-wide"
+                      className="mt-3 border-l-[3px] pl-2.5 text-[12px] font-bold uppercase tracking-wide"
                       style={{ borderColor: tpl.primary, color: tpl.primary }}
                     >
                       {section.label}
                     </p>
                   ) : (
-                    <p className="mt-4 text-[12px] font-bold uppercase tracking-wide" style={{ color: tpl.ink }}>
+                    <p
+                      className="mt-3 text-[12px] font-bold uppercase tracking-wide"
+                      style={{ color: tpl.ink }}
+                    >
                       {section.label}
                     </p>
                   )
@@ -424,10 +570,13 @@ export function DocumentPage({
                 {section.items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-baseline justify-between gap-6 border-b py-[5px]"
+                    className="flex items-baseline justify-between gap-6 border-b py-1"
                     style={{ borderColor: tpl.line }}
                   >
-                    <span className="flex-1 text-[12px] leading-relaxed" style={{ color: tpl.ink }}>
+                    <span
+                      className="flex-1 text-[12px] leading-relaxed"
+                      style={{ color: tpl.ink }}
+                    >
                       {item.description}
                     </span>
                     <span
@@ -443,7 +592,7 @@ export function DocumentPage({
             {doc.showTotal ? (
               tpl.totalChip ? (
                 <div
-                  className="mt-3 flex items-center justify-between gap-6 rounded-[6px] px-3 py-2.5"
+                  className="mt-2 flex items-center justify-between gap-6 rounded-[6px] px-3 py-2.5"
                   style={{ backgroundColor: tpl.primarySoft }}
                 >
                   <span
@@ -461,13 +610,19 @@ export function DocumentPage({
                 </div>
               ) : (
                 <div
-                  className="mt-3 flex items-center justify-between gap-6 border-t pt-2.5"
+                  className="mt-2 flex items-center justify-between gap-6 border-t pt-2.5"
                   style={{ borderColor: tpl.line }}
                 >
-                  <span className="text-[12px] font-bold uppercase tracking-wide" style={{ color: tpl.ink }}>
+                  <span
+                    className="text-[12px] font-bold uppercase tracking-wide"
+                    style={{ color: tpl.ink }}
+                  >
                     Total
                   </span>
-                  <span className="min-w-24 text-right text-[13px] font-bold tabular-nums" style={{ color: tpl.ink }}>
+                  <span
+                    className="min-w-24 text-right text-[13px] font-bold tabular-nums"
+                    style={{ color: tpl.ink }}
+                  >
                     {formatNaira(total)}
                   </span>
                 </div>
@@ -476,17 +631,23 @@ export function DocumentPage({
           </div>
         </div>
 
-        <div className="relative mt-auto pt-10">
-          <p className="text-[12px] leading-[1.85] text-justify" style={{ color: tpl.ink }}>
+        <div className="relative mt-auto pt-4">
+          <p
+            className="text-[12px] leading-[1.85] text-justify"
+            style={{ color: tpl.ink }}
+          >
             {closing}
           </p>
-          <p className="mt-4 text-[12px] leading-[1.85] text-justify" style={{ color: tpl.ink }}>
+          <p
+            className="mt-2 text-[12px] leading-[1.85] text-justify"
+            style={{ color: tpl.ink }}
+          >
             {thanks}
           </p>
 
-          <div className="mt-10">
+          <div className="mt-3">
             {company.signature ? (
-              <div className="relative mb-[-3px] h-16 max-w-[200px]">
+              <div className="relative -mb-0.75 h-16 max-w-50">
                 <Image
                   src={company.signature}
                   alt={`Signature of ${company.signatoryName || doc.signatoryRole || company.signatoryRole}`}
@@ -497,18 +658,29 @@ export function DocumentPage({
                 />
               </div>
             ) : null}
-            <div className="max-w-[200px]" style={{ borderTopWidth: 2, borderTopColor: tpl.primary }} />
+            <div
+              className="max-w-[200px] mt-1"
+              style={{ borderTopWidth: 2, borderTopColor: tpl.primary }}
+            />
             <p
               className="mt-2.5 text-[12px] font-bold uppercase leading-relaxed"
               style={{ color: tpl.titleAccent ? tpl.primary : tpl.ink }}
             >
-              {company.signatoryName || doc.signatoryRole || company.signatoryRole}
+              {company.signatoryName ||
+                doc.signatoryRole ||
+                company.signatoryRole}
             </p>
-            <p className="mt-0.5 text-[12px] leading-relaxed" style={{ color: tpl.muted }}>
+            <p
+              className="mt-0.5 text-[12px] leading-relaxed"
+              style={{ color: tpl.muted }}
+            >
               For: {company.name}
             </p>
             {company.signatoryName ? (
-              <p className="mt-0.5 text-[12px] leading-relaxed" style={{ color: tpl.muted }}>
+              <p
+                className="mt-0.5 text-[12px] leading-relaxed"
+                style={{ color: tpl.muted }}
+              >
                 {doc.signatoryRole || company.signatoryRole}
               </p>
             ) : null}
@@ -518,17 +690,23 @@ export function DocumentPage({
 
       {/* Footer: contact details + socials */}
       {hasFooter ? (
-        <div className="relative" style={tpl.band ? { backgroundColor: tpl.bandBg } : undefined}>
+        <div
+          className="relative z-2"
+          style={tpl.band ? { backgroundColor: tpl.bandBg } : undefined}
+        >
           <div
             className="px-[22mm] text-center"
             style={
               tpl.band
-                ? { paddingTop: "7mm", paddingBottom: tpl.wave ? "17mm" : "9mm" }
+                ? {
+                    paddingTop: "4mm",
+                    paddingBottom: tpl.wave ? "14mm" : "8mm",
+                  }
                 : {
                     borderTopWidth: 1,
                     borderTopColor: tpl.line,
-                    paddingTop: "5mm",
-                    paddingBottom: "12mm",
+                    paddingTop: "3mm",
+                    paddingBottom: "8mm",
                   }
             }
           >
@@ -547,7 +725,9 @@ export function DocumentPage({
                     style={{ color: tpl.band ? tpl.bandMuted : tpl.faint }}
                   >
                     <SocialIcon kind={s.key} size={12} color="currentColor" />
-                    <span className="text-[12px] leading-relaxed">{s.value}</span>
+                    <span className="text-[12px] leading-relaxed">
+                      {s.value}
+                    </span>
                   </span>
                 ))}
               </div>
@@ -558,7 +738,11 @@ export function DocumentPage({
 
       {/* Footer wave */}
       {tpl.wave ? (
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0" style={{ height: 96 }}>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute z-2 inset-x-0 bottom-0"
+          style={{ height: 96 }}
+        >
           <svg
             width="100%"
             height="100%"
@@ -572,5 +756,5 @@ export function DocumentPage({
         </div>
       ) : null}
     </div>
-  )
+  );
 }

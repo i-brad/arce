@@ -75,7 +75,14 @@ function TiledPattern({ src, tile, opacity }: { src: string; tile: number; opaci
       )
     }
   }
-  return <>{cells}</>
+  return (
+    <View
+      fixed
+      style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }}
+    >
+      {cells}
+    </View>
+  )
 }
 
 function buildStyles(tpl: DocTemplate, font?: string) {
@@ -90,16 +97,16 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       justifyContent: "space-between",
       alignItems: "flex-start",
       paddingHorizontal: 62,
-      paddingTop: 22,
-      paddingBottom: 20,
+      paddingTop: 14,
+      paddingBottom: 12,
     },
     brandRow: { flexDirection: "row", alignItems: "flex-start" },
     logoChip: {
-      width: 52,
-      height: 52,
+      width: 48,
+      height: 48,
       borderRadius: 12,
       backgroundColor: tpl.white,
-      padding: 6,
+      padding: 5,
       marginRight: 14,
       justifyContent: "center",
       alignItems: "center",
@@ -125,7 +132,7 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       justifyContent: "space-between",
       alignItems: "flex-start",
       paddingHorizontal: 62,
-      paddingTop: 42,
+      paddingTop: 36,
     },
     plainLogo: { width: 42, height: 42, marginRight: 14, objectFit: "contain" },
     plainCompanyName: { fontSize: 14, fontWeight: 700, letterSpacing: 0.4, color: tpl.ink },
@@ -141,7 +148,7 @@ function buildStyles(tpl: DocTemplate, font?: string) {
     classicHeader: {
       alignItems: "center",
       paddingHorizontal: 74,
-      paddingTop: 30,
+      paddingTop: 26,
     },
     classicLogo: { width: 48, height: 48, marginBottom: 6, objectFit: "contain" },
     classicName: { fontSize: 17, fontWeight: 700, letterSpacing: 0.5, color: tpl.ink, textAlign: "center" },
@@ -159,16 +166,16 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       backgroundColor: tpl.bandBg,
       alignItems: "center",
       paddingHorizontal: 62,
-      paddingTop: 16,
-      paddingBottom: 9,
+      paddingTop: 13,
+      paddingBottom: 7,
     },
     bannerLogoChip: {
-      width: 44,
-      height: 44,
+      width: 40,
+      height: 40,
       borderRadius: 12,
       backgroundColor: tpl.white,
-      padding: 5,
-      marginBottom: 5,
+      padding: 4,
+      marginBottom: 4,
       justifyContent: "center",
       alignItems: "center",
     },
@@ -191,8 +198,8 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       flex: 1,
       position: "relative",
       paddingHorizontal: 62,
-      paddingTop: 34,
-      paddingBottom: 26,
+      paddingTop: 38,
+      paddingBottom: 20,
     },
     shapeTop: {
       position: "absolute",
@@ -216,23 +223,23 @@ function buildStyles(tpl: DocTemplate, font?: string) {
     clientName: { fontSize: 10, fontWeight: 700, lineHeight: 1.5, color: tpl.ink },
     clientAddress: { fontSize: 9, color: tpl.muted, marginTop: 2, lineHeight: 1.5 },
     clientMeta: { fontSize: 9, color: tpl.muted, marginTop: 2, lineHeight: 1.5 },
-    salutation: { fontSize: 10, marginTop: 10, lineHeight: 1.5, color: tpl.ink },
-    titleWrap: { marginTop: 16, alignItems: "center" },
+    salutation: { fontSize: 10, marginTop: 8, lineHeight: 1.5, color: tpl.ink },
+    titleWrap: { marginTop: 12, alignItems: "center" },
     title: {
       fontSize: 14,
       fontWeight: 700,
       letterSpacing: 1.4,
       color: tpl.titleAccent ? tpl.primary : tpl.ink,
     },
-    titleRule: { width: 64, height: 3, backgroundColor: tpl.primary, marginTop: 8 },
-    bodyText: { fontSize: 10, marginTop: 14, lineHeight: 1.65, textAlign: "justify", color: tpl.ink },
-    breakdownHeading: { fontSize: 10, marginTop: 14, lineHeight: 1.5, color: tpl.ink },
-    itemsWrap: { marginTop: 8 },
+    titleRule: { width: 64, height: 3, backgroundColor: tpl.primary, marginTop: 6 },
+    bodyText: { fontSize: 10, marginTop: 10, lineHeight: 1.65, textAlign: "justify", color: tpl.ink },
+    breakdownHeading: { fontSize: 10, marginTop: 10, lineHeight: 1.5, color: tpl.ink },
+    itemsWrap: { marginTop: 6 },
     sectionLabel: {
       fontSize: 10,
       fontWeight: 700,
       letterSpacing: 0.6,
-      marginTop: 14,
+      marginTop: 10,
       marginBottom: 0,
       paddingLeft: 10,
       lineHeight: 1.5,
@@ -246,7 +253,7 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       alignItems: "flex-start",
       borderBottomWidth: 0.4,
       borderBottomColor: tpl.line,
-      paddingVertical: 3.5,
+      paddingVertical: 3,
     },
     itemDesc: { flex: 1, fontSize: 10, lineHeight: 1.5, paddingRight: 18, color: tpl.ink },
     itemAmount: {
@@ -262,7 +269,7 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       alignItems: "center",
       backgroundColor: tpl.primarySoft,
       borderRadius: 6,
-      marginTop: 12,
+      marginTop: 8,
       paddingHorizontal: 12,
       paddingVertical: 8,
     },
@@ -272,7 +279,7 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       alignItems: "center",
       borderTopWidth: 0.6,
       borderTopColor: tpl.line,
-      marginTop: 12,
+      marginTop: 8,
       paddingTop: 10,
     },
     totalLabel: {
@@ -289,16 +296,16 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       color: tpl.totalChip ? tpl.primarySoftText : tpl.ink,
     },
     spacer: { flex: 1 },
-    closingWrap: { marginTop: 18 },
+    closingWrap: { marginTop: 12 },
     closing: { fontSize: 10, lineHeight: 1.65, textAlign: "justify", color: tpl.ink },
-    thanks: { fontSize: 10, marginTop: 8, lineHeight: 1.65, textAlign: "justify", color: tpl.ink },
-    signature: { marginTop: 18 },
+    thanks: { fontSize: 10, marginTop: 6, lineHeight: 1.65, textAlign: "justify", color: tpl.ink },
+    signature: { marginTop: 12 },
     signImage: { width: 190, height: 48, objectFit: "contain", marginBottom: 3 },
     signLine: { width: 200, borderTopWidth: 2, borderTopColor: tpl.primary },
     signRole: {
       fontSize: 10,
       fontWeight: 700,
-      marginTop: 9,
+      marginTop: 7,
       lineHeight: 1.4,
       color: tpl.titleAccent ? tpl.primary : tpl.ink,
     },
@@ -306,8 +313,8 @@ function buildStyles(tpl: DocTemplate, font?: string) {
     footerBand: {
       backgroundColor: tpl.bandBg,
       paddingHorizontal: 62,
-      paddingTop: 14,
-      paddingBottom: tpl.wave ? 70 : 38,
+      paddingTop: 8,
+      paddingBottom: tpl.wave ? 52 : 34,
       alignItems: "center",
     },
     footerContact: { fontSize: 10, color: tpl.bandMuted, lineHeight: 1.5, textAlign: "center" },
@@ -316,8 +323,8 @@ function buildStyles(tpl: DocTemplate, font?: string) {
       borderTopWidth: 0.6,
       borderTopColor: tpl.line,
       paddingHorizontal: 62,
-      paddingTop: 16,
-      paddingBottom: 44,
+      paddingTop: 10,
+      paddingBottom: 34,
       alignItems: "center",
     },
     footerContactPlain: { fontSize: 10, color: tpl.muted, lineHeight: 1.5, textAlign: "center" },
@@ -344,14 +351,14 @@ function FlowerPattern({ color }: { color: string }) {
     }
   }
   const elems = flowers.flatMap((flower, i) => [
-    <Path key={`p${i}`} d={flower.path} fill={color} fillOpacity={0.09} />,
+    <Path key={`p${i}`} d={flower.path} fill={color} fillOpacity={0.05} />,
     <Circle
       key={`c${i}`}
       cx={flower.centerX}
       cy={flower.centerY}
       r={flower.centerR}
       fill={color}
-      fillOpacity={0.09}
+      fillOpacity={0.05}
     />,
   ])
   return (
@@ -421,9 +428,10 @@ export function LetterPdf({
         <View style={s.pageInner}>
           {doc.showPattern ? (
             company.patternImage ? (
-              <TiledPattern src={company.patternImage} tile={110} opacity={0.4} />
+              <TiledPattern src={company.patternImage} tile={92} opacity={0.05} />
             ) : tpl.pattern ? (
               <View
+                fixed
                 style={{
                   position: "absolute",
                   top: 0,
@@ -546,7 +554,7 @@ export function LetterPdf({
               s.body,
               ...(tpl.wave && !hasFooter ? [{ paddingBottom: 118 }] : []),
               ...(!tpl.band ? [{ paddingTop: tpl.layout === "classic" ? 20 : 34 }] : []),
-              ...(tpl.layout === "banner" ? [{ paddingTop: 22 }] : []),
+              ...(tpl.layout === "banner" ? [{ paddingTop: 36 }] : []),
             ]}
           >
             <View style={s.content}>

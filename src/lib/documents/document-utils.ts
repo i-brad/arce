@@ -1,7 +1,12 @@
-import type { Company, DocType, InvoiceDocument, LineItem } from "@/lib/data/types"
-import type { SocialKey } from "./social-icons"
-import { formatNaira, numberToNairaWords } from "@/lib/utils/currency"
-import { uid } from "@/lib/utils/id"
+import type {
+  Company,
+  DocType,
+  InvoiceDocument,
+  LineItem,
+} from "@/lib/data/types";
+import { formatNaira, numberToNairaWords } from "@/lib/utils/currency";
+import { uid } from "@/lib/utils/id";
+import type { SocialKey } from "./social-icons";
 
 const SOCIAL_LABELS: Record<SocialKey, string> = {
   website: "Website",
@@ -10,53 +15,58 @@ const SOCIAL_LABELS: Record<SocialKey, string> = {
   twitter: "X",
   tiktok: "TikTok",
   linkedin: "LinkedIn",
-}
+};
 
 export function allItems(doc: Pick<InvoiceDocument, "sections">): LineItem[] {
-  return doc.sections.flatMap((section) => section.items)
+  return doc.sections.flatMap((section) => section.items);
 }
 
-export function firstItem(doc: Pick<InvoiceDocument, "sections">): LineItem | undefined {
-  return allItems(doc)[0]
+export function firstItem(
+  doc: Pick<InvoiceDocument, "sections">,
+): LineItem | undefined {
+  return allItems(doc)[0];
 }
 
 export function totalOf(doc: Pick<InvoiceDocument, "sections">): number {
-  return allItems(doc).reduce((sum, item) => sum + item.amount, 0)
+  return allItems(doc).reduce((sum, item) => sum + item.amount, 0);
 }
 
 export function renderTemplate(
   template: string,
   doc: Pick<InvoiceDocument, "sections">,
 ): string {
-  const first = firstItem(doc)
-  const total = totalOf(doc)
+  const first = firstItem(doc);
+  const total = totalOf(doc);
   const values: Record<string, string> = {
     amount: first ? formatNaira(first.amount) : "—",
     words: first ? numberToNairaWords(first.amount) : "—",
     total: formatNaira(total),
     totalWords: numberToNairaWords(total),
-  }
-  return template.replace(/\{(amount|words|total|totalWords)\}/g, (_, key: string) => values[key] ?? "")
+  };
+  return template.replace(
+    /\{(amount|words|total|totalWords)\}/g,
+    (_, key: string) => values[key] ?? "",
+  );
 }
 
 export function newLineItem(): LineItem {
-  return { id: uid("it"), description: "", amount: 0 }
+  return { id: uid("it"), description: "", amount: 0 };
 }
 export function today(): string {
-  const d = new Date()
-  const month = String(d.getMonth() + 1).padStart(2, "0")
-  const day = String(d.getDate()).padStart(2, "0")
-  return `${d.getFullYear()}-${month}-${day}`
+  const d = new Date();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${month}-${day}`;
 }
 
 export function companyContactLine(company: Company): string {
   const parts = [
     company.address,
-    company.phone,
-    company.whatsapp ? `WhatsApp: ${company.whatsapp}` : "",
+    // company.phone,
+    // company.whatsapp ? `WhatsApp: ${company.whatsapp}` : "",
     company.email,
-  ].filter(Boolean)
-  return parts.join(" • ")
+  ].filter(Boolean);
+  return parts.join(" • ");
 }
 
 export function companySocialsLine(company: Company): string {
@@ -67,14 +77,14 @@ export function companySocialsLine(company: Company): string {
     company.twitter ? `X: ${company.twitter}` : "",
     company.tiktok ? `TikTok: ${company.tiktok}` : "",
     company.linkedin ? `LinkedIn: ${company.linkedin}` : "",
-  ].filter(Boolean)
-  return parts.join(" • ")
+  ].filter(Boolean);
+  return parts.join(" • ");
 }
 
 export interface SocialEntry {
-  key: SocialKey
-  label: string
-  value: string
+  key: SocialKey;
+  label: string;
+  value: string;
 }
 
 export function companySocials(company: Company): SocialEntry[] {
@@ -85,10 +95,14 @@ export function companySocials(company: Company): SocialEntry[] {
     ["twitter", company.twitter ?? ""],
     ["tiktok", company.tiktok ?? ""],
     ["linkedin", company.linkedin ?? ""],
-  ]
+  ];
   return entries
     .filter(([, value]) => value.trim())
-    .map(([key, value]) => ({ key, label: SOCIAL_LABELS[key], value: value.trim() }))
+    .map(([key, value]) => ({
+      key,
+      label: SOCIAL_LABELS[key],
+      value: value.trim(),
+    }));
 }
 
 const LETTER_MONTHS = [
@@ -104,18 +118,24 @@ const LETTER_MONTHS = [
   "OCTOBER",
   "NOVEMBER",
   "DECEMBER",
-]
+];
 
 export function formatLetterDate(iso: string): string {
-  const [y, m, d] = iso.split("-").map(Number)
+  const [y, m, d] = iso.split("-").map(Number);
   const suffix =
-    d % 10 === 1 && d !== 11 ? "ST" : d % 10 === 2 && d !== 12 ? "ND" : d % 10 === 3 && d !== 13 ? "RD" : "TH"
-  return `${d}${suffix} ${LETTER_MONTHS[m - 1]}, ${y}`
+    d % 10 === 1 && d !== 11
+      ? "ST"
+      : d % 10 === 2 && d !== 12
+        ? "ND"
+        : d % 10 === 3 && d !== 13
+          ? "RD"
+          : "TH";
+  return `${d}${suffix} ${LETTER_MONTHS[m - 1]}, ${y}`;
 }
 
 export function newDocument(type: DocType, company: Company): InvoiceDocument {
-  const now = new Date().toISOString()
-  const invoice = type === "invoice"
+  const now = new Date().toISOString();
+  const invoice = type === "invoice";
   return {
     id: uid("doc"),
     type,
@@ -148,5 +168,5 @@ export function newDocument(type: DocType, company: Company): InvoiceDocument {
     status: "draft",
     createdAt: now,
     updatedAt: now,
-  }
+  };
 }
