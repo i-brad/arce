@@ -1,4 +1,4 @@
-import type { Client, Company, DocType, InvoiceDocument } from "@/lib/data/types"
+import type { Company, DocType, InvoiceDocument } from "@/lib/data/types"
 import { uid } from "@/lib/utils/id"
 import { newDocument } from "@/lib/documents/document-utils"
 
@@ -24,22 +24,8 @@ export const SAMPLE_DOCS: SampleDoc[] = [
   },
 ]
 
-export const SAMPLE_CLIENT: Client = {
-  id: uid("client"),
-  name: "MR OLUWAFEMI ALOFE OLUWADAMILARE",
-  address: "NO 13, YEMI FAROUNBI, NEW BODIJA, IBADAN, OYO STATE.",
-  phone: "",
-  email: "",
-  createdAt: new Date().toISOString(),
-}
-
-export function sampleDocument(
-  type: DocType,
-  company: Company,
-  clientId: string,
-): InvoiceDocument {
+export function sampleDocument(type: DocType, company: Company): InvoiceDocument {
   const doc = newDocument(type, company)
-  doc.clientId = clientId
   doc.salutation = "Dear Sir,"
   doc.status = "draft"
   doc.showTotal = true

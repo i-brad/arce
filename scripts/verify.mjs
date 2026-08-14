@@ -315,9 +315,42 @@ if (!printOk) {
   )
 }
 
-// New document: total breakdown enabled by default, pattern toggle works
+// New document: total breakdown enabled by default, pattern toggle works.
+// The test client is seeded straight into IndexedDB so the app never creates
+// a client on its own.
+await page.goto(`${BASE}/documents`, { waitUntil: "networkidle" })
+await page.evaluate(() => {
+  return new Promise((resolve, reject) => {
+    const open = indexedDB.open("acre", 1)
+    open.onupgradeneeded = () => {
+      if (!open.result.objectStoreNames.contains("kv")) open.result.createObjectStore("kv")
+    }
+    open.onsuccess = () => {
+      const db = open.result
+      const tx = db.transaction("kv", "readwrite")
+      tx.objectStore("kv").put(
+        [
+          {
+            id: "client_test",
+            name: "Test Client",
+            address: "NO 1, TEST STREET, TEST CITY, LAGOS.",
+            phone: "",
+            email: "",
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        "clients",
+      )
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => reject(tx.error)
+    }
+    open.onerror = () => reject(open.error)
+  })
+})
+await page.reload({ waitUntil: "networkidle" })
+
 await page.goto(`${BASE}/documents/new`, { waitUntil: "networkidle" })
-await page.getByLabel("Client").selectOption({ label: "MR OLUWAFEMI ALOFE OLUWADAMILARE" })
+await page.getByLabel("Client").selectOption({ label: "Test Client" })
 await page.getByLabel("Reference number").fill("VERIFY-001")
 await page.getByText("Create & edit").click()
 await page.waitForURL(/\/documents\//)

@@ -6,7 +6,6 @@ import { useData } from "@/lib/data/context"
 import { DOC_TYPE_LABELS, type DocType } from "@/lib/data/types"
 import { newDocument, today } from "@/lib/documents/document-utils"
 import {
-  SAMPLE_CLIENT,
   SAMPLE_DOCS,
   sampleDocument,
 } from "@/lib/documents/sample-documents"
@@ -16,7 +15,7 @@ import { Field, Input, Select } from "@/components/ui/fields"
 
 export default function NewDocumentPage() {
   const router = useRouter()
-  const { ready, clients, company, saveDocument, saveClient } = useData()
+  const { ready, clients, company, saveDocument } = useData()
 
   const [type, setType] = useState<DocType>("acknowledgement")
   const [clientId, setClientId] = useState("")
@@ -42,12 +41,7 @@ export default function NewDocumentPage() {
   const loadSample = async (sampleType: DocType) => {
     if (!company) return
     setSaving(true)
-    let client = clients.find((c) => c.name === SAMPLE_CLIENT.name) ?? clients[0] ?? null
-    if (!client) {
-      client = SAMPLE_CLIENT
-      await saveClient(client)
-    }
-    const doc = sampleDocument(sampleType, company, client.id)
+    const doc = sampleDocument(sampleType, company)
     await saveDocument(doc)
     router.push(`/documents/${doc.id}`)
   }
