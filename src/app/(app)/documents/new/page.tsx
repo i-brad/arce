@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useData } from "@/lib/data/context"
 import { DOC_TYPE_LABELS, type DocType } from "@/lib/data/types"
 import { newDocument, today } from "@/lib/documents/document-utils"
+import { suggestRefNumber } from "@/lib/documents/ref-number"
 import {
   SAMPLE_DOCS,
   sampleDocument,
@@ -15,11 +16,13 @@ import { Field, Input, Select } from "@/components/ui/fields"
 
 export default function NewDocumentPage() {
   const router = useRouter()
-  const { ready, clients, company, saveDocument } = useData()
+  const { ready, clients, documents, company, saveDocument } = useData()
 
   const [type, setType] = useState<DocType>("acknowledgement")
   const [clientId, setClientId] = useState("")
   const [date, setDate] = useState(today())
+  const [phase, setPhase] = useState("PH1")
+  const [number, setNumber] = useState("")
   const [saving, setSaving] = useState(false)
 
   if (!ready || !company) {
@@ -31,6 +34,8 @@ export default function NewDocumentPage() {
     const doc = newDocument(type, company)
     doc.clientId = clientId
     doc.date = date
+    doc.phase = phase
+    doc.number = number.trim() || suggestRefNumber(documents, company, phase, date)
     setSaving(true)
     await saveDocument(doc)
     router.push(`/documents/${doc.id}`)
@@ -102,6 +107,28 @@ export default function NewDocumentPage() {
 
         <Field label="Date">
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        </Field>
+
+        <Field label="Phase / property" hint="Feeds the reference number, e.g. PH1.">
+          <Input value={phase} onChange={(e) => setPhase(e.target.value)} placeholder="PH1" />
+        </Field>
+
+        <Field label="Reference number" hint="Leave blank to auto-generate from the company, phase, date and sequence.">
+          <div className="flex gap-2">
+            <Input
+              className="flex-1"
+              value={number}
+              onChange={(e) => setNumber(e.target.value)}
+              placeholder="CK-PH1-2026-001"
+            />
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => setNumber(suggestRefNumber(documents, company, phase, date))}
+            >
+              Suggest
+            </Button>
+          </div>
         </Field>
 
         <div className="flex justify-end pt-2">

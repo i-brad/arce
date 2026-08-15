@@ -2,7 +2,9 @@
 
 import type { Client, DocFont, DocType, InvoiceDocument, ItemSection, LineItem } from "@/lib/data/types"
 import { DOC_TYPE_LABELS } from "@/lib/data/types"
+import { useData } from "@/lib/data/context"
 import { newLineItem } from "@/lib/documents/document-utils"
+import { suggestRefNumber } from "@/lib/documents/ref-number"
 import { layoutLabels, templateList, type LayoutId, type TemplateId } from "@/lib/documents/theme"
 import { uid } from "@/lib/utils/id"
 import { Button } from "@/components/ui/button"
@@ -54,7 +56,14 @@ const templateGroups = layoutOrder
   .filter((group) => group.templates.length > 0)
 
 export function DocumentEditor({ doc, clients, onChange }: DocumentEditorProps) {
+  const { documents, company } = useData()
   const set = (patch: Partial<InvoiceDocument>) => onChange({ ...doc, ...patch })
+
+  const suggestNumber = () => {
+    if (!company) return
+    const others = documents.filter((d) => d.id !== doc.id)
+    set({ number: suggestRefNumber(others, company, doc.phase, doc.date) })
+  }
 
   const addSection = () =>
     set({ sections: [...doc.sections, { id: uid("sec"), label: "", items: [newLineItem()] }] })
@@ -99,7 +108,28 @@ export function DocumentEditor({ doc, clients, onChange }: DocumentEditorProps) 
               ))}
             </Select>
           </Field>
+          <Field label="Phase / property" hint="Feeds the reference number, e.g. PH1.">
+            <Input
+              value={doc.phase}
+              onChange={(e) => set({ phase: e.target.value })}
+              placeholder="PH1"
+            />
+          </Field>
         </div>
+
+        <Field label="Reference number" hint="Editable — click Suggest to derive one from the company, phase, date and sequence.">
+          <div className="flex gap-2">
+            <Input
+              className="flex-1"
+              value={doc.number}
+              onChange={(e) => set({ number: e.target.value })}
+              placeholder="CK-PH1-2026-001"
+            />
+            <Button variant="secondary" type="button" onClick={suggestNumber}>
+              Suggest
+            </Button>
+          </div>
+        </Field>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Template" hint="Each template uses a different page layout, not just colours.">

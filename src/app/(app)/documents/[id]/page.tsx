@@ -14,7 +14,7 @@ import { Dialog } from "@/components/ui/dialog"
 
 export default function DocumentEditorPage({ params }: PageProps<"/documents/[id]">) {
   const { id } = use(params)
-  const { ready, documents, clients, company, saveDocument, deleteDocument } = useData()
+  const { ready, documents, clients, company, saveDocument, deleteDocument, duplicateDocument } = useData()
 
   if (!ready || !company) {
     return <p className="text-sm text-muted">Loading…</p>
@@ -41,6 +41,7 @@ export default function DocumentEditorPage({ params }: PageProps<"/documents/[id
       clients={clients}
       saveDocument={saveDocument}
       deleteDocument={deleteDocument}
+      duplicateDocument={duplicateDocument}
     />
   )
 }
@@ -51,18 +52,21 @@ function EditorInner({
   clients,
   saveDocument,
   deleteDocument,
+  duplicateDocument,
 }: {
   doc: InvoiceDocument
   company: Company
   clients: Client[]
   saveDocument: (doc: InvoiceDocument) => Promise<void>
   deleteDocument: (id: string) => Promise<void>
+  duplicateDocument: (id: string) => Promise<string | undefined>
 }) {
   const router = useRouter()
   const { saveCompany } = useData()
   const [draft, setDraft] = useState(doc)
   const [saved, setSaved] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [duplicating, setDuplicating] = useState(false)
 
   const client = clients.find((c) => c.id === draft.clientId)
   const fileName = `${draft.number || draft.title}${client ? ` - ${client.name}` : ""}.pdf`
@@ -71,6 +75,14 @@ function EditorInner({
     await saveDocument(draft)
     setSaved(true)
     window.setTimeout(() => setSaved(false), 2000)
+  }
+
+  const duplicate = async () => {
+    setDuplicating(true)
+    await saveDocument(draft)
+    const newId = await duplicateDocument(draft.id)
+    setDuplicating(false)
+    if (newId) router.push(`/documents/${newId}`)
   }
 
   return (
@@ -97,6 +109,9 @@ function EditorInner({
           </Button>
           <Button variant="secondary" onClick={() => window.print()}>
             Print
+          </Button>
+          <Button variant="secondary" onClick={duplicate} disabled={duplicating}>
+            {duplicating ? "Duplicating…" : "Duplicate"}
           </Button>
           <PdfDownloadButton doc={draft} company={company} client={client} fileName={fileName} />
           <Button onClick={save}>{saved ? "Saved" : "Save"}</Button>

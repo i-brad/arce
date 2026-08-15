@@ -76,7 +76,8 @@ export class BrowserRepository implements Repository {
   }
 
   async listDocuments(): Promise<InvoiceDocument[]> {
-    return (await this.get<InvoiceDocument[]>(KEYS.documents)) ?? []
+    const documents = (await this.get<Partial<InvoiceDocument>[]>(KEYS.documents)) ?? []
+    return documents.map((doc) => ({ phase: "PH1", ...doc }) as InvoiceDocument)
   }
 
   async getDocument(id: string): Promise<InvoiceDocument | undefined> {

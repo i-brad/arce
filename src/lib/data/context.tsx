@@ -11,6 +11,8 @@ import {
 } from "react"
 import { BrowserRepository } from "./local-repository"
 import type { Client, Company, InvoiceDocument } from "./types"
+import { suggestRefNumber } from "@/lib/documents/ref-number"
+import { uid } from "@/lib/utils/id"
 
 const repo = new BrowserRepository()
 
@@ -25,6 +27,7 @@ interface DataContextValue {
   deleteClient: (id: string) => Promise<void>
   saveDocument: (doc: InvoiceDocument) => Promise<void>
   deleteDocument: (id: string) => Promise<void>
+  duplicateDocument: (id: string) => Promise<string | undefined>
 }
 
 const DataContext = createContext<DataContextValue | null>(null)
@@ -114,6 +117,26 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, documents: prev.documents.filter((d) => d.id !== id) }))
   }, [])
 
+  const duplicateDocument = useCallback(
+    async (id: string) => {
+      const source = documents.find((d) => d.id === id)
+      if (!source) return undefined
+      const now = new Date().toISOString()
+      const next: InvoiceDocument = {
+        ...source,
+        id: uid("doc"),
+        number: company ? suggestRefNumber(documents, company, source.phase, source.date) : "",
+        status: "draft",
+        createdAt: now,
+        updatedAt: now,
+      }
+      await repo.saveDocument(next)
+      setState((prev) => ({ ...prev, documents: [next, ...prev.documents] }))
+      return next.id
+    },
+    [documents, company],
+  )
+
   const value = useMemo(
     () => ({
       ready: loaded,
@@ -126,8 +149,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
       deleteClient,
       saveDocument,
       deleteDocument,
+      duplicateDocument,
     }),
-    [loaded, error, company, clients, documents, saveCompany, saveClient, deleteClient, saveDocument, deleteDocument],
+    [
+      loaded,
+      error,
+      company,
+      clients,
+      documents,
+      saveCompany,
+      saveClient,
+      deleteClient,
+      saveDocument,
+      deleteDocument,
+      duplicateDocument,
+    ],
   )
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>

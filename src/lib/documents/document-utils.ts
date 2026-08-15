@@ -140,6 +140,7 @@ export function newDocument(type: DocType, company: Company): InvoiceDocument {
     id: uid("doc"),
     type,
     number: "",
+    phase: "PH1",
     date: today(),
     clientId: "",
     title: invoice ? "INVOICE" : "LETTER OF ACKNOWLEDGEMENT",

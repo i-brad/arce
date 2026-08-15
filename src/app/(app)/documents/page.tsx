@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { useData } from "@/lib/data/context"
 import { DOC_TYPE_LABELS } from "@/lib/data/types"
@@ -10,9 +11,18 @@ import { Button, LinkButton } from "@/components/ui/button"
 import { Input } from "@/components/ui/fields"
 
 export default function DocumentsPage() {
-  const { ready, documents, clients, deleteDocument } = useData()
+  const router = useRouter()
+  const { ready, documents, clients, deleteDocument, duplicateDocument } = useData()
   const [query, setQuery] = useState("")
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [duplicating, setDuplicating] = useState<string | null>(null)
+
+  const duplicate = async (id: string) => {
+    setDuplicating(id)
+    const newId = await duplicateDocument(id)
+    setDuplicating(null)
+    if (newId) router.push(`/documents/${newId}`)
+  }
 
   if (!ready) {
     return <p className="text-sm text-muted">Loading…</p>
@@ -76,6 +86,14 @@ export default function DocumentsPage() {
                     </span>
                     <Badge tone={doc.status === "sent" ? "sent" : "draft"}>{doc.status}</Badge>
                   </Link>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={duplicating === doc.id}
+                    onClick={() => void duplicate(doc.id)}
+                  >
+                    {duplicating === doc.id ? "Duplicating…" : "Duplicate"}
+                  </Button>
                   <Button
                     variant="danger"
                     size="sm"

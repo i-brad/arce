@@ -54,6 +54,7 @@ export interface InvoiceDocument {
   id: string;
   type: DocType;
   number: string;
+  phase: string;
   date: string;
   clientId: string;
   title: string;
